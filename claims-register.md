@@ -46,11 +46,12 @@ strength originally wanted.
 |---|---|---|
 | Attribution is a *novel* concept | **`refuted`** | XACML 3.0 can carry a `PolicyIdentifierList`. Twenty years old |
 | Attribution as a **required** output, not optional | `partial` | Not found in prior art, but the survey is one pass |
-| Attribution as an **independently conformance-scored** property | `partial` — **the strongest remaining claim** | Needs the OPA/Cedar conformance check in `prior-art.md` §2 |
+| Attribution as an **independently conformance-scored** property | `partial` — **still the strongest remaining claim, and now with an argument behind it** | ISO 8583 DE 39 exists and card networks deliberately keep it vague to stop risk-rule reverse-engineering. That objection is answered: the reader here is the operator who *wrote* the policy, not a counterparty probing it (`prior-art.md` §3a) |
 | Normative evaluation order justified by verdict/attribution asymmetry | `partial` | Combining algorithms fix precedence in XACML; the *justification* appears new |
 | A reproducible adversarial benchmark for economic governance | `partial` | Absence of prior benchmarks is asserted from one pass. **Must be a real literature search before publication** |
 | `DEFENDED_BY_ACCIDENT` as a scoring category | `partial` | The idea that a coincidental pass is a finding. Nearest neighbour unknown |
 | "Bounded, not eliminated" as a disclosure obligation in a specification | `partial` | The concept is ordinary risk management; the *conformance requirement to disclose the residual* is the narrow part |
+| External anchoring as a contribution | **`refuted` 2026-08-21** | Certificate Transparency's Signed Tree Head already carries **tree size + root hash** — `(length, head)` — with consistency proofs and witness networks. `EVID-6a` is CT's model applied to a spend journal. What survives: requiring it in a governance standard, and naming the *unavailable* case as its own outcome (`prior-art.md` §3a) |
 | Absent-degrades / broken-raises for the control layer's own availability | `partial` | Fail-safe vs fail-secure is decades old |
 | AEGL is a new architectural category | **`refuted` by our own definition** | The narrowed definition deliberately includes card authorization systems |
 
@@ -79,10 +80,10 @@ Listed so nobody reaches for them under deadline.
 | Claim | What is missing |
 |---|---|
 | "There is no benchmark for agent economic governance" | A real literature search. One pass is not absence |
-| "No standard requires attribution" | The OPA/Cedar conformance check, plus NIST AI RMF and EU AI Act traceability |
+| "No standard requires attribution" | OPA/Cedar conformance check and NIST/EU AI Act traceability still open. **ISO 8583 is done**: the field exists, accuracy is not enforced, and vagueness is deliberate. Whether any EMV or scheme rule *requires* DE 39 accuracy is the remaining gap |
 | "Agent-initiated stablecoin payments are a new AML surface" | Plausible and unsourced. Needs either a citation or downgrading to a stated hypothesis |
 | "The delegation clamp is macaroon attenuation" | Verify Birgisson et al. venue, year and exact framing before citing |
-| "Certificate Transparency solves the anchoring problem we solve" | Read the witness/gossip literature. **This could shrink `EVID-6a`'s contribution to "applied to a spend journal"** |
+| ~~"Certificate Transparency solves the anchoring problem we solve"~~ | **Done, and it does.** The STH is `(length, head)`; consistency proofs detect omission; witnesses detect split-view. `EVID-6a`'s contribution is now stated as "CT's model, required by a governance spec, with the unavailable case named" |
 | "$0.32 average x402 payment validates the micropayment thesis" | Verified from x402.org on 2026-08-21: 75.41M transactions, $24.24M / 30 days. **A single observation on one day** — take a second reading before the paper treats it as a trend |
 
 ---
@@ -94,7 +95,8 @@ sealed record, and every limitation is in the sentence rather than a footnote.
 
 > We present an economic governance layer that renders a deterministic, attributed verdict on a
 > proposed payment before it executes, and an adversarial benchmark of 18 attacks that scores such
-> layers. The benchmark's scoring separates *defended* from **defended by a control the attack does
+> layers. Neither the policy evaluation nor the evidence structure is new — the former is XACML's
+> lineage and the latter is Certificate Transparency's, applied to a spend journal. The benchmark's scoring separates *defended* from **defended by a control the attack does
 > not target**, which we count as a finding: on our own implementation this distinguishes a genuine
 > defence from a coincidence in one of eighteen cases. Two attacks remain undefended and are
 > published as such. Closing a third required no new control — only a counting window longer than an

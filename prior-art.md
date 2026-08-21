@@ -114,6 +114,84 @@ off and reported it under the governance layer's name.
 
 ---
 
+## 3a · The two highest-risk surveys, done 2026-08-21
+
+Both were flagged as able to kill a claim. **One shrank a claim; the other strengthened it and
+supplied an argument the paper was missing.**
+
+### Payment authorization already has the field — and deliberately does not populate it
+
+`verified`. ISO 8583 carries a response code in **data element 39**, and card networks therefore
+*can* report why a transaction was declined. Some codes are specific: insufficient funds, exceeds
+withdrawal limit, expired card.
+
+**But code 05, "do not honour", is a deliberate catch-all**, and the reasons given for keeping it
+vague are not laziness:
+
+- revealing specific decline reasons would let fraud-detection systems be **reverse-engineered**;
+- specific reasons can disclose **sensitive cardholder information**;
+- generic responses prevent internal **risk models** from being inferred.
+
+Its overuse is documented and criticised — Spain, Brazil and the USA are named as having
+disproportionate rates — and a merchant cannot diagnose the cause from their side at all.
+
+**This does not kill the attribution claim. It supplies the objection the paper has to answer**, and
+answering it is a contribution in itself:
+
+> Card networks can attribute a decline and choose not to, for principled reasons. Why is required
+> attribution safe in an economic governance layer?
+
+**Because the reader is different.** In a card network, attribution flows to the **merchant** — a
+counterparty with an incentive to probe the issuer's risk rules. In an AEGL, attribution flows to
+the **operator who wrote the policy and owns the budget**. There is nothing to reverse-engineer:
+telling them *"refused by `daily_usd`"* discloses a number they authored. No third party's privacy
+is involved, because the agent's own operator is the audience.
+
+**And the boundary that follows is already in the implementation.** Where attribution *would* reach
+a counterparty, the card-network reasoning applies in full and the detail must be withheld —
+identity is pseudonymous by default, and *"telling a seller your remaining budget invites it to
+charge exactly that."* The two disciplines are the same rule pointed in opposite directions, which
+is the version of this argument worth publishing.
+
+**Still open:** whether EMV or any card-scheme rule *requires* accuracy in DE 39. If one does, the
+"not required anywhere" half of the claim needs softening.
+
+### Certificate Transparency already has the mechanism, and this shrinks EVID-6a
+
+`verified`, and this is the finding that costs something.
+
+CT's **Signed Tree Head** carries a **tree size** and a root hash. That is `(length, head)` — 
+*exactly* what `AEGS-0.1-EVID-6a` requires an anchor to commit to, and for the same reason. On top
+of it CT has:
+
+- **consistency proofs** — a logarithmic number of hashes proving one snapshot is a prefix of
+  another, which is truncation and omission detection;
+- **witness networks** — independent parties gossiping to confirm a log is append-only and to detect
+  **split-view attacks**, which is external anchoring by another name;
+- **a defined client rule** — on receiving an STH with a different tree size, fetch a consistency
+  proof and keep the larger only if it verifies.
+
+**So the mechanism in `EVID-6a` is Certificate Transparency's, applied to a spend journal.** The
+paper must say that in the related-work section rather than let a reviewer discover it.
+
+What survives, and it is narrow:
+
+1. **Requiring it in a governance standard**, where the artefact being anchored is a record of
+   refusals rather than of certificates.
+2. **The four-outcome result type, with `unknown` never a pass.** CT clients handle an unreachable
+   log, but I have not found the outcome *named and normatively separated* from consistency — that
+   distinction is what stops a verifier who can be partitioned from the sink from reporting success.
+3. **A different adversary.** In CT the *log operator* misbehaves and there are many clients. Here
+   the *journal writer is the agent under governance*, and there may be exactly one operator, so
+   gossip between peers is unavailable and the anchor must be a party the writer cannot reach.
+
+**Recommended wording change:** stop describing anchoring as a contribution. Describe it as
+*"CT's STH-and-witness model, required by a governance specification, with the unavailable case
+named as its own outcome."* That is defensible and considerably smaller than what was implied
+before this survey.
+
+---
+
 ## 4 · Adjacent fields to survey before publication
 
 Each could contain a paper that weakens a claim. None checked yet.
@@ -121,8 +199,8 @@ Each could contain a paper that weakens a claim. None checked yet.
 | Field | Why it matters | Status |
 |---|---|---|
 | Capability-based security | Macaroons, SPKI/SDSI, object capabilities. The delegation clamp lives here | `open` |
-| Transparency logs | CT, Trillian, witness/gossip protocols. `EVID-6a`'s four outcomes may already exist as split-view detection | `open` — **highest risk to a claim** |
-| Payment authorization | ISO 8583, EMV, 3-D Secure. Pre-execution attributable verdicts are their daily business | `open` — **most likely to contain the whole model** |
+| Transparency logs | CT, Trillian, witness/gossip protocols | **`verified` §3a — the mechanism is CT's. Claim shrunk** |
+| Payment authorization | ISO 8583, EMV, 3-D Secure | **`verified` §3a — the field exists and is deliberately vague. Claim strengthened.** EMV accuracy requirements still `open` |
 | Transaction monitoring / AML | Structuring detection is a solved commercial problem. Ours is deliberately deterministic; theirs is not | `open` |
 | Budget/quota systems | Cloud quotas, FinOps, Kubernetes ResourceQuota. Count *and* value envelopes over windows | `open` |
 | Agent governance | Microsoft AGT covered. Others unknown | partly `verified` |
