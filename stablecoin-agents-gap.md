@@ -164,19 +164,36 @@ Measured, not assumed. A decision record's `assessments` block currently carries
 }
 ```
 
-**There is no `aml` key.** So a `stablecoin-1` profile requiring `AMLAssessment: MUST_RECORD` would
-be **unsatisfiable today** — precisely the failure `aegs-1`'s own note warns against, and it would
-have been easy to ship without noticing.
+**There is no `aml` key.** So a `stablecoin-1` profile requiring `AMLAssessment: MUST_RECORD` is
+**unsatisfiable today.**
 
-The fix is small and honest: emit `assessments.aml` with `assessed: false`, populated when an
-external provider supplies a finding. The `_assessment(None)` helper already produces exactly that
-shape for a control that did not run.
+**I proposed the wrong fix first, and a guard caught it within a minute.** The obvious move is to
+emit `assessments.aml = {"assessed": false}` — the record would finally *say* screening had not run
+rather than being silent. It looks honest and it is a false statement: `assessed: false` means
+*this control exists and did not run this time*, and there is no AML control here at all. The
+truthful representation of a control an implementation lacks is the key's **absence**, which
+`IMPLEMENTED_CONTROLS = ("trust", "risk", "roi")` enforces and
+`test_a_control_this_implementation_lacks_is_absent_not_zero` asserts, with the reasoning already
+written down: *"reporting `aml: {score: 0}` would claim a clean screening that never happened."*
+
+**Absent is not not-run.** The four-states rule applies to the record's own vocabulary, and the
+change was reverted.
+
+**So the conclusion inverts, and the honest version is better.** The profile keeps the requirement,
+and **tesoro does not conform to `stablecoin-1`** until a screening provider is integrated behind
+the control. A profile is a bar; an implementation that has not cleared it declares which profile it
+*does* meet — `aegs-2` — and says why. That is the same posture as publishing two open red-team
+findings, and it is more useful to an obliged entity than a record that pretends to a control.
+
+The satisfiable path is to build the control, not to widen the record: the `sanctions` control
+already exists as the highest-precedence dispositive control, so a real provider has somewhere to
+land.
 
 Three further gaps, in order of how much they matter to this vertical:
 
 | Gap | Status | Note |
 |---|---|---|
-| `assessments.aml` absent from the record | **blocks the profile** | Small. Do first |
+| No AML control at all | **blocks conformance to `stablecoin-1`, correctly** | Not fixable by editing the record. Needs a provider behind the existing `sanctions` slot |
 | No jurisdiction as a policy fact | open | The AML schema *already has* a `jurisdiction` field; nothing populates it, and nothing can rule on it |
 | No Travel Rule originator/beneficiary fields | open | AEGS should define the **record**, never the transfer |
 | Agent→human attribution not framed as *originator* attribution | open | The capability exists; the framing does not, and the framing is what makes it legible to a compliance team |
