@@ -75,8 +75,13 @@ attribution-shaped and would be a strong supporting citation rather than a compe
 
 ### (a) A reproducible adversarial benchmark for pre-execution economic governance
 
-**Searched for:** an existing benchmark for agent spend governance. **Not found** (`open` — one
-pass only; needs a proper literature search before the paper asserts absence).
+**Searched for:** an existing benchmark for agent spend governance. **First pass said not found.
+The second pass, 2026-08-28, found three** — see [§3b](#3b--the-benchmark-survey-done-2026-08-28--and-it-cost-more-than-the-other-two-combined),
+which supersedes everything below in this subsection. PayBench is adversarial, payment-specific and
+2026; OAP ran a live CTF producing 4,437 adversarial decisions from external attackers; PCAS is a
+Datalog reference monitor. **The claim to a first benchmark is dead**, what survives is the
+`DEFENDED_BY_ACCIDENT` scoring rule, and the paragraph below is kept unedited because a survey that
+quietly rewrites its own wrong answer is not a survey.
 
 What exists nearby: OWASP Agentic Top 10 (a *taxonomy*, not an executable benchmark);
 Microsoft AGT's 992 conformance tests (conformance to *their* spec, not adversarial); AgentBench,
@@ -191,6 +196,135 @@ named as its own outcome."* That is defensible and considerably smaller than wha
 before this survey.
 
 ---
+
+## 3b · The benchmark survey, done 2026-08-28 — and it cost more than the other two combined
+
+The outline gated drafting on this: *"§6's claim to be first rests on one pass."* It did, and the
+pass was wrong. Three systems exist in this exact space, all published in 2026, and one of them
+beats this project on the axis its own limitations section names as the biggest hole.
+
+### OAP — the closest work, and it is very close
+
+**"Before the Tool Call: Deterministic Pre-Action Authorization for Autonomous AI Agents."**
+Uchi Uchibeke, APort Technologies, arXiv:2603.20953, March 2026. Read in the source PDF rather than
+in a summary — see the note at the end of this section for why that mattered.
+
+| OAP has | Detail |
+|---|---|
+| Deterministic pre-action authorization | Framework-layer `before_tool_call` hook. *"Same inputs, same decision. No sampling, no temperature."* |
+| Three verdicts | `ALLOW` / `DENY` / `ESCALATE` |
+| A signed decision record | Ed25519, timestamped, one per decision. *"Auditable"* is one of six stated requirements |
+| **A reason code per denial** | `oap.limit_exceeded`, `oap.merchant_forbidden`, `oap.unknown_capability`, plus a human-readable explanation |
+| Fail-closed | *"If the authorization service is unavailable, the tool call is denied"* |
+| Declarative policy packs | JSON, `condition → deny_code` pairs, decidable by construction |
+| **An adversarial benchmark with external attackers** | **4,437 adversarial decisions across 1,151 attack sessions**, a live CTF against a banking agent |
+| Framework mappings | NIST AI RMF, OWASP Agentic Top 10, SAFE-MCP |
+
+It also names **PCAS** (Policy Compiler for Secure Agentic Systems — a Datalog-derived reference
+monitor that moved policy compliance from 48% to 93%) and says the two *"independently converge on
+the need for deterministic pre-action enforcement as a distinct architectural layer … This
+convergence suggests the category is real, not an artifact of a single system's design."*
+
+**They are right, and that sentence retires a claim this project has not been careful enough about.**
+Pre-execution deterministic authorization is not a category anyone here invented. It has at least
+three independent implementations, and the honest posture is corroboration rather than priority.
+
+### What OAP explicitly does not do, from its own limitations section
+
+Quoted, because a limitation an author writes down is far better evidence than one a rival infers:
+
+> **Delegation chains.** OAP v1.0 does not formalize a delegation model for multi-agent scenarios.
+> An agent that delegates to a sub-agent with narrowed permissions requires a delegation chain
+> specification. This is planned for v1.1.
+
+> **ESCALATE completeness.** The ESCALATE decision path (Algorithm 1, line 14) is specified but not
+> yet implemented in the reference.
+
+It also lists *"attack sequence-based structuring"* as future work.
+
+**Those three are precisely things this project has implemented and specified**: the delegation
+clamp with narrowing-only semantics and a named limiting step, four verdicts with `ESCALATE` and
+`REVIEW` both live, and structuring measured, bounded, and published as still open.
+
+### PayBench — adversarial, payment-specific, and 2026
+
+**"A Benchmark for Unsafe Commercial Autonomy in AI Agents with Delegated Payment Authority."**
+Conor Plunkett, 2026. 226 scenarios in phase 2, **113 matched trap/lookalike pairs**, 12 failure
+categories including budget, approval evasion and audit trails. Three conditions: no policy,
+prompt-based policy, and hard tool constraints.
+
+**Its matched-pair design solves a problem this benchmark does not address at all.** A trap should
+be refused and its lookalike permitted, so *blanket refusal cannot score well*. There is no
+equivalent guard here: 18 attacks with no benign twins means an implementation that refused
+everything would score 18/18. That is a real defect in the instrument, found by reading a
+competitor rather than by testing.
+
+Two differences that are substantive rather than face-saving. PayBench measures **agent behaviour**
+under control conditions — every scenario runs an LLM — where this measures a **control layer**
+with no model in the loop. And PayBench does not record which control produced a refusal.
+
+### EcoAgent-Bench and the rest
+
+**EcoAgent-Bench** (arXiv:2608.05519, August 2026) scores agents' *economic decision quality* under
+budget constraints — escalating appropriately, choosing a model tier, stopping on unsupported
+premises — not enforcement. Adjacent, not competing. **ToolMisuseBench** is offline, deterministic
+and replayable under a fixed seed, and isolates failure origin between call construction, policy
+handling and recovery. **FraudBench** stress-tests policy-grounded banking agents against adaptive
+fraud. **Faramesh** (arXiv:2601.17744) is an execution-time control plane.
+
+---
+
+### What this does to the three claims
+
+| Claim | Verdict |
+|---|---|
+| **1. A reproducible adversarial benchmark for pre-execution economic governance** | **Dead as stated.** PayBench is adversarial, payment-specific and 2026; OAP's CTF carries 4,437 decisions from *external* attackers |
+| **2. Attribution as a required, conformance-scored property** | **Narrowed again — and the surviving part is better evidenced than before** |
+| **3. "Bounded, not eliminated" as a disclosure obligation** | **Untouched by this pass.** Nothing found requires an implementation to state the residual its control leaves behind |
+
+**Claim 1 becomes a scoring rule, not a benchmark.** The instrument is 18 attacks and there is no
+defensible claim to being first, largest, or externally validated — OAP is better on the last of
+those and says so with numbers. What no surveyed system has is **`DEFENDED_BY_ACCIDENT`**: counting
+*refused by a control the attack does not target* as a finding rather than a pass. OAP records a
+deny code but never asks whether that code was the one aiming at the attack; PayBench scores
+refusal appropriateness but not refusal provenance. Paired with the superseding record lineage
+(EXP-008 → EXP-009 → EXP-010), that is what is left — a paragraph, not a section.
+
+**Claim 2 must stop saying attribution is absent elsewhere.** OAP requires a signed decision record
+and a structured deny code per rule. That *is* which-rule-decided, and it is required rather than
+optional. XACML narrowed this claim once; OAP narrows it again and harder, because OAP is a
+pre-action, deterministic, agent-facing system rather than a 2003 policy language.
+
+What survives is smaller and still defensible:
+
+- **Attribution on permit, not only on denial.** OAP's reason codes attach to `DENY`. A record
+  stating which control *permitted* an action is a different artefact, and this project requires one.
+- **Precedence among controls that all fired.** A `deny_code` is the code of the rule that matched.
+  It does not answer *which of several controls should be reported when more than one would refuse*.
+  Dispositive controls and the narrowing lattice do.
+- **Independent conformance scoring of whether attribution was produced.** OAP has a specification
+  and adapters; it does not ship machine-readable vectors letting a third party score an
+  implementation nobody involved wrote.
+- **The order asymmetry**, which nothing surveyed states: the verdict is order-independent, the
+  attribution is not, so requiring attribution forces a normative evaluation order.
+
+**A fourth claim is now available that was not before.** The delegation clamp — narrowing-only
+authority with a named limiting step — is listed by the closest comparable system as *not
+formalized, planned for v1.1*. A gap the nearest neighbour writes into its own limitations section
+is the strongest kind of support a contribution can have.
+
+### A note on method, because this pass nearly went wrong
+
+The fetched summary of the OAP paper answered **"YES"** to *does it require attribution — recording
+which policy or control produced the decision — as a mandatory output*. Extracting the PDF's own
+text gives **zero occurrences of `attribut`**, zero of *which policy*, zero of *which rule*, and
+zero of *provenance*. The summary was accommodating rather than accurate, and trusting it would
+have abandoned claim 2 on false evidence.
+
+**This is the third time in this project a fetched summary has overstated a source** — after the
+Microsoft AGT summary that called it "not about financial controls", and the R.16 pass where an
+over-broad wording survived until the consolidated text was read. The rule is now explicit: **a
+source that can kill or save a claim is read in its own text, never in a summary of it.**
 
 ## 4 · Adjacent fields to survey before publication
 
