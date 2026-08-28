@@ -169,6 +169,9 @@ the same everywhere: attribution, a pre-execution decision, and an evidence trai
 Existing profiles: `aegs-1` (baseline), `aegs-2` (counterparty-aware, extends `aegs-1`), `none`.
 Requirements are `MUST_EXERCISE` / `MUST_RECORD` / `OPTIONAL`, each with a `recordPath`.
 
+**Shipped 2026-08-28** as [`profiles/stablecoin-1.json`](https://github.com/aegoll/aegs/blob/main/profiles/stablecoin-1.json).
+The design below is what was proposed; what shipped matches it, and what it cost is recorded after.
+
 A `stablecoin-1` profile extending `aegs-2` needs exactly two changes, and the restraint is the
 point:
 
@@ -186,6 +189,31 @@ whether screening ran — and to distinguish *absent* from *not-run* from *unkno
 integrating a real provider gets a record proving screening happened; one that has not gets a record
 positively stating it did not. **Both are better than a record with silence where screening should
 be**, and silence is what exists today.
+
+### What it cost: the profile collided with the standard's own rule against it
+
+`AEGS-0.1-PROF-6` forbids a profile from requiring a control for which no known implementation has
+an engine, and names `AMLAssessment` as one of the three it excludes. So the proposal above was not
+merely unbuilt — it was **prohibited by the specification it was written for.**
+
+PROF-6 is right about **ladder** profiles and wrong as a universal rule, and the difference is *who
+is expected to claim the profile*. Every implementation must pick a rung, so an unreachable rung is
+dead weight: everyone claims the rung below, the higher level goes unused, and the standard has
+gained a decoration. A **vertical** profile is claimed by one class of deployment, and the question
+becomes whether *that class* can satisfy it. For obliged entities settling in stablecoins, sanctions
+and AML screening is not an aspiration — it is a licence condition they already meet with commodity
+providers.
+
+`AEGS-0.1-PROF-6a` permits it, with the guard that stops it being a loophole: **the named class must
+already meet the requirement outside AEGS.** Otherwise "vertical" becomes a label any hard profile
+can wear to escape PROF-6. `deploymentClass` is a manifest field, so `tools/check_profiles.py`
+enforces the mechanical half — a profile requiring an engineless control without naming its class
+fails, verified by planting exactly that on `aegs-2`. Whether the named class *genuinely* meets the
+bar is a judgement no tool can make, and the clause says so rather than implying a rigour it lacks.
+
+PROF-6 keeps its text and gains a pointer. Clause identifiers are permanent
+([INTRO-4a](https://github.com/aegoll/aegs/blob/main/spec/00-introduction.md)), so this is a
+suffixed insertion, not a rewrite of a clause other documents cite.
 
 ---
 
@@ -217,7 +245,9 @@ written down: *"reporting `aml: {score: 0}` would claim a clean screening that n
 change was reverted.
 
 **So the conclusion inverts, and the honest version is better.** The profile keeps the requirement,
-and **tesoro does not conform to `stablecoin-1`** until a screening provider is integrated behind
+and **tesoro does not conform to `stablecoin-1`** — now pinned by a test that asserts the
+non-conformance, asserts it is the *only* finding, and names the two ways a future change could make
+it pass and which of them is wrong — until a screening provider is integrated behind
 the control. A profile is a bar; an implementation that has not cleared it declares which profile it
 *does* meet — `aegs-2` — and says why. That is the same posture as publishing two open red-team
 findings, and it is more useful to an obliged entity than a record that pretends to a control.
