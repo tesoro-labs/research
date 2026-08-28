@@ -1,0 +1,83 @@
+/* Print-first stylesheet for the standing report. A4, no dark mode, no external requests. */
+
+@page {
+  size: A4;
+  margin: 18mm 16mm 16mm 16mm;
+}
+
+:root {
+  --ink: #16161a;
+  --dim: #4a4a55;
+  --faint: #7a7a85;
+  --line: #d9d9d3;
+  --accent: #2b4c7e;
+  --accent-soft: #eaf0f8;
+  --ok: #1f7a4d;
+  --warn: #9a6a00;
+  --bad: #a81c1c;
+  --panel: #f7f7f4;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  font-family: "Segoe UI", Arial, Helvetica, sans-serif;
+  font-size: 10.2pt;
+  line-height: 1.5;
+  color: var(--ink);
+  margin: 0;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+h1 { font-size: 26pt; line-height: 1.15; margin: 0 0 6pt; letter-spacing: -0.4pt; }
+h2 {
+  font-size: 14pt; margin: 20pt 0 7pt; padding-bottom: 4pt;
+  border-bottom: 1.5pt solid var(--line); break-after: avoid;
+}
+h3 { font-size: 11.5pt; margin: 13pt 0 4pt; break-after: avoid; }
+p { margin: 0 0 7pt; }
+ul { margin: 0 0 8pt; padding-left: 16pt; }
+li { margin-bottom: 4pt; }
+strong { font-weight: 700; }
+code {
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 9pt; background: var(--panel);
+  padding: 0.5pt 3pt; border-radius: 3pt;
+}
+a { color: var(--accent); text-decoration: none; }
+
+.lede { font-size: 11.5pt; color: var(--dim); margin-bottom: 12pt; }
+.meta { font-size: 8.6pt; color: var(--faint); margin-bottom: 16pt; }
+
+table { width: 100%; border-collapse: collapse; margin: 8pt 0 12pt; font-size: 9.2pt; }
+th, td { text-align: left; vertical-align: top; padding: 5pt 7pt; border-bottom: 0.75pt solid var(--line); }
+th { background: var(--panel); font-size: 8.4pt; text-transform: uppercase; letter-spacing: 0.5pt; color: var(--dim); }
+
+.box { border: 1.5pt solid var(--line); border-radius: 6pt; padding: 9pt 11pt; margin: 9pt 0 12pt; background: #fff; }
+.box.key    { border-color: var(--accent); background: var(--accent-soft); }
+.box.good   { border-color: var(--ok); }
+.box.bad    { border-color: var(--bad); background: #fdf3f2; }
+.box.warn   { border-color: var(--warn); background: #fdf8ec; }
+.box p:last-child { margin-bottom: 0; }
+.box .label { font-size: 8.4pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8pt; display: block; margin-bottom: 4pt; }
+.good .label { color: var(--ok); }
+.bad .label  { color: var(--bad); }
+.warn .label { color: var(--warn); }
+.key .label  { color: var(--accent); }
+
+.two { display: flex; gap: 10pt; }
+.two > * { flex: 1; }
+
+.fig { margin: 10pt 0 6pt; text-align: center; break-inside: avoid; }
+.fig svg { width: 100%; height: auto; }
+.cap { font-size: 8.4pt; color: var(--faint); margin-top: 4pt; text-align: left; }
+
+.page-break { break-before: page; }
+.no-split { break-inside: avoid; }
+
+footer.doc {
+  margin-top: 18pt; padding-top: 8pt;
+  border-top: 0.75pt solid var(--line);
+  font-size: 8.2pt; color: var(--faint);
+}

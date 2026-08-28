@@ -62,13 +62,50 @@ An agent-initiated payment **has** an originator — the human or organisation w
 that party **did not initiate the transfer.** They authorised a policy, days earlier, under which
 software later decided. The record shows a person who pressed nothing.
 
-Nothing in the Travel Rule payload distinguishes:
+**The 2025 revision moved away from them, not towards them.** FATF changed the glossary definition
+of *originator* in June 2025, from the account holder who **allows** the transfer to the account
+holder who **requests** it. "Allows" would have covered someone who authorised a standing policy.
+"Requests" does not. Nothing in the explanatory note suggests agents were considered — the phrase
+*artificial intelligence* does not appear in it — so this is a consequence of the change rather
+than its intent, and it is stated here as one.
+
+The required set under INR.16 ¶9 is name, account number or a unique transaction reference,
+address or national identity number or customer identification number or date and place of birth,
+plus an LEI or BIC for legal persons. **Every element identifies whose money moved. None identifies
+who instructed the movement, and none carries the basis on which it was instructed.**
+
+So the required payload cannot distinguish:
 
 - a person who reviewed and sent this payment;
 - a person who delegated authority to an agent that sent it under policy;
 - a person whose credentials an agent used after being compromised.
 
-**The three are materially different and currently indistinguishable in the record.**
+**The three are materially different and indistinguishable in the required record.**
+
+### What checking this cost, and what it bought
+
+An earlier draft said *nothing in the Travel Rule payload* distinguishes them. On fiat rails that is
+**false**, and the correction is worth more than the sentence it replaces.
+
+CBPR+ `pacs.008.001.08` carries
+`CreditTransferTransactionInformation/InitiatingParty` — `<InitgPty>`, `[0..1]` — and
+`UltimateDebtor` — `<UltmtDbtr>`, `[0..1]`. A structural place to say *someone other than the
+debtor initiated this* has existed for years.
+
+Four things bound what that concedes. It is **optional** and is not among R.16's required elements,
+so no receiving institution can rely on it. It names a **party**, never a mode — `Name`,
+`PostalAddress`, `Identification` answer *who*, never *under what authority*. An agent **cannot be
+one**, because the element expects a legal or natural person and an agent has no legal personality.
+And it still does not separate delegation from compromise: both yield an identical `InitgPty`, or
+an absent one.
+
+On the rail this document is about, there is no concession to make. **IVMS101** — the payload VASPs
+use for virtual-asset transfers — defines the originator as `originatorPersons` plus
+`accountNumber`, and has **no initiating-party, on-behalf-of, agent, or delegated-authority field
+at all.**
+
+Full working, with the documents and byte sizes, in
+[`verification/r16-originator.md`](verification/r16-originator.md).
 
 ### (b) The customer can be onboarded
 
@@ -256,10 +293,14 @@ Marked per the rules in [`README.md`](README.md).
 - `verified` — the guide's seven frameworks, six segments and checklists, read directly from the
   PDF; the GENIUS Act timeline, independently confirmed; x402 volumes from x402.org; KAST's
   segment, scale and funding; the missing `aml` key, measured from a live record.
-- `recalled` — that FATF R.16's originator field has no representation for delegated or autonomous
-  initiation. **Plausible and not confirmed against the R.16 text.** If some jurisdiction's
-  implementation already carries such a field, §3(a) needs softening. **Check before sending
-  anything to anyone.**
+- `verified` — that R.16's required data set has no representation for delegated or autonomous
+  initiation, checked 2026-08-28 against the consolidated FATF Recommendations 2012–2025 and the
+  June 2025 explanatory note. The check **refuted the broader wording** — fiat `pacs.008` does carry
+  an optional `InitgPty` — and §3(a) is rewritten accordingly. It also found something better than
+  it removed: the *originator* definition was narrowed from "allows" to "requests" in the same
+  revision. Working in [`verification/r16-originator.md`](verification/r16-originator.md).
+- `open` — whether any **jurisdiction's implementation** of R.16 adds an initiator field beyond the
+  FATF minimum. The FATF text was read; seven national frameworks were not.
 - `open` — whether any regulator has published guidance on agent-initiated transfers. Nothing found,
   nothing searched for properly.
 - `open` — MiCA, FCA, MAS, HKMA and VARA specifics are as the guide states them, not independently

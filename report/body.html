@@ -1,0 +1,266 @@
+<h1>Where tesoro stands</h1>
+<p class="lede">An autonomous economic governance layer, assessed against the 2026 stablecoin
+compliance landscape: seven regulatory frameworks, six kinds of obliged entity, and the actor none
+of them name.</p>
+<p class="meta">
+  Prepared 2026-08-22 &middot; Landscape from <em>Stablecoin compliance in 2026: which rules apply to
+  your business</em>, Sumsub, 66pp &middot; Measurements from sealed research records EXP-007 to
+  EXP-010 &middot; <strong>Not legal advice, and not a claim of regulatory compliance.</strong>
+</p>
+
+<div class="box key">
+  <span class="label">The finding, in one paragraph</span>
+  <p>None of the six business segments in the compliance landscape is <em>an autonomous agent that
+  spends</em>. That is correct rather than an omission: an agent has no legal personality, cannot
+  hold a licence and cannot be a VASP, so no framework attaches to it. <strong>The exposure lands on
+  the obliged entity instead, and it arrives without a category.</strong> Three assumptions the
+  frameworks rest on break at once, and what closes the gap is not screening or identity &mdash; it
+  is evidence of which human authority an agent acted under, and which control permitted the
+  payment.</p>
+</div>
+
+<h2>1 &middot; The landscape</h2>
+
+<p>Seven frameworks account for most stablecoin obligations in 2026. None operates in isolation, and
+the guide's own conclusion is the useful frame: <em>a single stablecoin payment can involve several
+of them at once.</em></p>
+
+<table>
+  <thead><tr><th style="width:22%">Framework</th><th style="width:16%">Scope</th><th>What it principally binds</th></tr></thead>
+  <tbody>
+    <tr><td><strong>FATF R.16</strong> (Travel Rule)</td><td>global</td><td>Originator and beneficiary information on qualifying virtual-asset transfers, in both directions</td></tr>
+    <tr><td><strong>GENIUS Act</strong></td><td>United States</td><td>Permitted Payment Stablecoin Issuers: reserves, redemption, and a risk-based AML/CFT and sanctions programme</td></tr>
+    <tr><td><strong>MiCA</strong></td><td>European Union</td><td>EMT and ART issuers, and CASPs serving EU clients</td></tr>
+    <tr><td><strong>FCA regime</strong></td><td>United Kingdom</td><td>Authorisation before regulated activity; issuers, custodians, platforms</td></tr>
+    <tr><td><strong>MAS framework</strong></td><td>Singapore</td><td>Single-currency stablecoins; reserves, attestation, redemption windows</td></tr>
+    <tr><td><strong>HKMA Ordinance</strong></td><td>Hong Kong</td><td>Licensed issuance, capital and reserve backing</td></tr>
+    <tr><td><strong>VARA</strong></td><td>Dubai / UAE</td><td>Prior approval for fiat-referenced virtual asset issuance</td></tr>
+  </tbody>
+</table>
+
+<p>The obligations are then allocated by <strong>what a business does</strong>: banks adding
+stablecoin activity, issuers, payments and processors, infrastructure and custody, wallets, and card
+issuers. Each has its own readiness checklist.</p>
+
+<div class="box">
+  <span class="label">One timeline worth being exact about</span>
+  <p>The GENIUS Act was signed <strong>18 July 2025</strong>; implementing regulations were due
+  <strong>18 July 2026</strong>; the framework takes effect <strong>18 January 2027</strong> or 120
+  days after final rules. FinCEN and OFAC published a joint proposed AML/CFT rule on
+  <strong>10 April 2026</strong>, proposed to take effect twelve months after issuance. These
+  obligations fall on <em>issuers</em> &mdash; a point §5 returns to, because it decides what this
+  software can honestly be.</p>
+</div>
+
+<div class="fig no-split">
+  __SVG__
+  <p class="cap"><strong>Figure 1.</strong> Seven frameworks bind six kinds of obliged entity. An
+  agent is outside all of them, yet transacts through them &mdash; and the obligation stays with the
+  entity.</p>
+</div>
+
+<h2 class="page-break">2 &middot; Three assumptions that break</h2>
+
+<h3>2.1 &nbsp;The originator is a person who acted</h3>
+<p>FATF R.16 requires originator and beneficiary information on qualifying transfers. An
+agent-initiated payment <em>has</em> an originator &mdash; the party whose funds move &mdash; and
+that party <strong>did not initiate the transfer</strong>. They authorised a policy, days earlier,
+under which software later decided.</p>
+<p>The required set under INR.16 ¶9 is name, account number or unique transaction reference,
+address or national identity number or customer identification number or date and place of birth,
+and an LEI or BIC for legal persons. <strong>Every element identifies whose money moved. None
+identifies who instructed the movement, or on what authority.</strong> So it cannot distinguish
+three materially different situations: a person who reviewed and sent the payment; a person who
+delegated authority to an agent that sent it under policy; and a person whose credentials an agent
+used after being compromised.</p>
+
+<div class="box key">
+  <span class="label">Checked against the source text, 2026-08-28</span>
+  <p>The June 2025 revision moved <em>away</em> from delegated authority. FATF changed the glossary
+  definition of <em>originator</em> from the account holder who <strong>allows</strong> the transfer
+  to the account holder who <strong>requests</strong> it. “Allows” would have covered someone who
+  authorised a standing policy; “requests” does not. The phrase <em>artificial intelligence</em>
+  appears nowhere in the explanatory note, so this is a consequence of the change and not its
+  intent.</p>
+  <p>The check also <strong>refuted a broader claim an earlier draft made.</strong> Fiat rails do
+  carry an initiator field: CBPR+ <code>pacs.008.001.08</code> defines <code>InitiatingParty</code>
+  <code>[0..1]</code> and <code>UltimateDebtor</code> <code>[0..1]</code>. It is optional, absent
+  from R.16's required set, names a <em>party</em> and never a mode, cannot name an agent — an
+  agent has no legal personality — and yields the same value whether authority was delegated or
+  credentials were stolen.</p>
+  <p><strong>On the rail this document is about there is no concession to make.</strong> IVMS101,
+  the payload VASPs use for virtual-asset transfers, defines the originator as
+  <code>originatorPersons</code> plus <code>accountNumber</code> and has no initiating-party,
+  on-behalf-of, agent or delegated-authority field at all.</p>
+</div>
+
+<h3>2.2 &nbsp;The customer can be onboarded</h3>
+<p>KYC, KYB, beneficial ownership and ongoing monitoring all assume a subject with documents.
+<strong>An agent has no documents.</strong> It is not a customer, not a beneficial owner, and not a
+synthetic identity either &mdash; a synthetic identity is a fabricated person, and an agent is not
+pretending to be one. The existing categories do not contain it.</p>
+<p>What <em>can</em> be established is <strong>attribution</strong>: which onboarded human or entity
+is accountable for this agent's spending, provable afterwards. That is a governance question rather
+than an identity one, and it is the honest division of labour.</p>
+
+<h3>2.3 &nbsp;Monitoring baselines match human tempo</h3>
+<p>Transaction monitoring, structuring detection and velocity rules are calibrated on how people
+spend. An agent making <strong>500 micropayments a day</strong> is either entirely normal or a
+serious alarm, and nothing in the transaction stream says which.</p>
+<p>The scale is measured, not hypothetical: on 21 August 2026 the x402 protocol reported
+<strong>75.41 million transactions and $24.24 million of volume over 30 days</strong> &mdash; a
+<strong>$0.32 average payment</strong> &mdash; on a protocol whose own documentation specifies no
+buyer-side authorisation, no identity and no AML. On any human-calibrated model that flow is either
+invisible or pathological. Both readings are wrong.</p>
+
+<h2>3 &middot; What actually closes the gap</h2>
+
+<table>
+  <thead><tr><th style="width:46%">What an obliged entity must be able to show</th><th>What an economic governance layer supplies</th></tr></thead>
+  <tbody>
+    <tr><td>Which accountable human authority a payment was made under</td><td>Registered identity with a delegation chain, <strong>clamped</strong> so a delegate's authority is the narrower of its own and its delegator's &mdash; and a delegate declaring no limit inherits its parent's rather than escaping it</td></tr>
+    <tr><td>That the payment was permitted <em>before</em> it happened</td><td>A deterministic pre-execution verdict. Median ~170&nbsp;&micro;s across ten runs, range 139&ndash;330&nbsp;&micro;s, zero tokens (EXP-007)</td></tr>
+    <tr><td><strong>Which control</strong> permitted or refused it</td><td>The attributed control &mdash; a required output, independently scored by the conformance suite, with a declared precedence for dispositive controls</td></tr>
+    <tr><td>That the record has not been edited, reordered or truncated</td><td>Append-only hash-chained evidence, externally anchorable, with the residual stated rather than hidden</td></tr>
+    <tr><td>That cumulative exposure is bounded</td><td>Envelopes per day, month, counterparty and resource &mdash; by value <em>and</em> by action count</td></tr>
+    <tr><td>Whether screening ran</td><td><strong>Not supplied. See §5.</strong></td></tr>
+  </tbody>
+</table>
+
+<div class="box key">
+  <span class="label">The line that has to hold</span>
+  <p>An economic governance layer <strong>consumes compliance signals and produces governance
+  evidence</strong>. It does not produce compliance signals, and it is not a compliance programme.
+  Screening, lists, KYC/KYB, case management and filing belong to the compliance platform. Which
+  authority an agent acted under, and which control decided, belong to the governance layer. Neither
+  substitutes for the other.</p>
+</div>
+
+<h2>4 &middot; Evidence of the controls working, and of them failing</h2>
+
+<p>An eighteen-attack adversarial benchmark is run against the implementation on every commit, and
+scored against a recorded baseline that fails the build in <em>both</em> directions &mdash; a
+regressed defence is a vulnerability, and a closed gap is a claim four documents would need to stop
+making.</p>
+
+<table>
+  <thead><tr><th>Outcome</th><th style="width:12%">Count</th><th>Meaning</th></tr></thead>
+  <tbody>
+    <tr><td><code>DEFENDED</code></td><td><strong>15</strong></td><td>Refused, and by the control the attack targets</td></tr>
+    <tr><td><code>DEFENDED_BY_ACCIDENT</code></td><td><strong>1</strong></td><td>Refused by <em>something else</em>. Counted as a finding, not a pass &mdash; paced differently it succeeds</td></tr>
+    <tr><td><code>UNDEFENDED</code></td><td><strong>2</strong></td><td>It worked. Both are published rather than footnoted</td></tr>
+    <tr><td><code>ERROR</code></td><td><strong>0</strong></td><td>Asserted, not observed &mdash; a suite of errors reads as a clean run</td></tr>
+  </tbody>
+</table>
+
+<div class="two">
+  <div class="box bad no-split">
+    <span class="label">Open: microtransaction structuring</span>
+    <p>Forty payments of $0.001 five minutes apart. $0.04 moves, nothing refused. A count envelope
+    <em>bounds</em> the mechanism &mdash; 2,328 actions a day is now impossible &mdash; and does not
+    refuse this instance, because forty trivial purchases is also what a legitimate agent does.</p>
+  </div>
+  <div class="box bad no-split">
+    <span class="label">Open: journal truncation</span>
+    <p>Any prefix of a valid hash chain is a valid hash chain, so a refused agent can delete the
+    refusal. External anchoring closes it; <strong>no anchor ships by default</strong>, so the
+    benchmark reports the unanchored posture.</p>
+  </div>
+</div>
+
+<div class="box warn no-split">
+  <span class="label">A measurement that was wrong, and how it was corrected</span>
+  <p>An earlier sealed record described the paced-evasion attack as &ldquo;paced exactly at the rate
+  limit&rdquo;. It was paced <em>above</em> the limit and stopped after ten minutes, before the
+  hourly counter could reach anything &mdash; the rate limit had worked the whole time. A superseding
+  record carries the correction and <strong>the original stands with its error</strong>, because a
+  record that can be revised after the fact stops being evidence.</p>
+</div>
+
+<h2 class="page-break">5 &middot; Where this stands, precisely</h2>
+
+<div class="two">
+  <div class="box good">
+    <span class="label">Conforms &mdash; profile aegs-2</span>
+    <p>Counterparty-aware governance. Agent identity exercised, budget envelopes exercised, policy
+    identified by content hash, attributed control required, evidence chained. Scored
+    <strong>7/7</strong> by the conformance suite, which imports no implementation.</p>
+  </div>
+  <div class="box bad">
+    <span class="label">Does not conform &mdash; proposed profile stablecoin-1</span>
+    <p>The profile requires an AML assessment to be recorded. <strong>There is no AML control</strong>
+    &mdash; no list, no matching, no jurisdiction model. The implementation declares the profile it
+    <em>does</em> meet and says why.</p>
+  </div>
+</div>
+
+<div class="box warn">
+  <span class="label">A mistake worth publishing</span>
+  <p>Designing that profile, the obvious move was to emit an AML assessment reading
+  <code>assessed: false</code> &mdash; the record would finally <em>say</em> screening had not run
+  rather than being silent. It reads as honest and it is a false statement:
+  <code>assessed: false</code> means <em>this control exists and did not run this time</em>, and
+  there is no AML control at all. The truthful representation of a control an implementation lacks is
+  the field's <strong>absence</strong>.</p>
+  <p>An existing guard caught it within a minute, with the reasoning already written down:
+  <em>&ldquo;reporting <code>aml: {score: 0}</code> would claim a clean screening that never
+  happened.&rdquo;</em> The change was reverted. <strong>The conclusion inverts and the honest
+  version is stronger:</strong> the profile keeps the requirement, and the reference implementation
+  does not yet clear it. A profile is a bar, not a description of what happened to be built.</p>
+</div>
+
+<h3>The remaining gaps, in priority order</h3>
+<table>
+  <thead><tr><th style="width:34%">Gap</th><th style="width:20%">Status</th><th>Note</th></tr></thead>
+  <tbody>
+    <tr><td>No AML control of any kind</td><td><strong>blocks stablecoin-1</strong></td><td>Not fixable by editing the record. Needs a provider integrated behind the existing <code>sanctions</code> control &mdash; which is already the highest-precedence dispositive control, so there is somewhere for it to land</td></tr>
+    <tr><td>Jurisdiction is not a policy fact</td><td>open</td><td>The AML schema already carries a <code>jurisdiction</code> field; nothing populates it and nothing can rule on it. It must be <em>declared</em> data, never inferred about a counterparty</td></tr>
+    <tr><td>No Travel Rule originator or beneficiary fields</td><td>open</td><td>The standard should define the <strong>record</strong>, never the transfer. Schema-ready is honest; implementing R.16 is not this layer's job</td></tr>
+    <tr><td>Attribution is not framed as <em>originator</em> attribution</td><td>open</td><td>The capability exists &mdash; identity, delegation chain, clamp. The framing does not, and the framing is what makes it legible to a compliance team</td></tr>
+  </tbody>
+</table>
+
+<h2>6 &middot; What is not claimed</h2>
+
+<div class="box bad">
+  <span class="label">Explicitly outside scope</span>
+  <ul>
+    <li><strong>Regulatory compliance.</strong> GENIUS obligations fall on Permitted Payment
+    Stablecoin Issuers, MiCA's on EMT/ART issuers and CASPs, the Travel Rule's on VASPs. This is a
+    software library and none of those.</li>
+    <li><strong>AML or sanctions screening.</strong> No list, no matching, no jurisdiction model.</li>
+    <li><strong>KYC, KYB or beneficial ownership.</strong> The opposite &mdash; these are consumed as
+    signals.</li>
+    <li><strong>Travel Rule compliance.</strong> A record shape is not a transfer protocol.</li>
+    <li><strong>Tamper-proof evidence.</strong> The specification forbids the claim, and the
+    prohibition does not relax because an anchor exists. Truncation is detectable
+    <em>beyond the anchor's last publication</em>, not detectable.</li>
+    <li><strong>Custody, keys, chain interaction or address validation.</strong> No funds are held
+    and no money is moved.</li>
+    <li><strong>Independent validation.</strong> Every conformance case and adversarial attack was
+    written by the author of the system under test. This is the single largest limitation of the
+    work and it cannot be closed by effort.</li>
+  </ul>
+</div>
+
+<h2>7 &middot; Confidence, and what is unverified</h2>
+
+<p>Marked per claim, because a document of this kind is worth exactly as much as its weakest
+sourced sentence.</p>
+
+<table>
+  <thead><tr><th style="width:16%">Confidence</th><th>Claims</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Verified</strong></td><td>The seven frameworks, six segments and checklists, read from the source guide. The GENIUS Act timeline, confirmed independently of it. x402 volumes, from the protocol's own site on 2026-08-21. All benchmark and latency figures, from sealed records with checksums. The absent AML field, measured from a live decision record.</td></tr>
+    <tr><td><strong>Verified<br>on re-check</strong></td><td>That R.16's <em>required</em> data set has no representation for delegated or autonomous initiation — checked 2026-08-28 against the consolidated FATF Recommendations 2012–2025 and the June 2025 explanatory note. <strong>The check refuted the broader claim an earlier draft made</strong> and §2.1 was rewritten: fiat <code>pacs.008</code> does carry an optional <code>InitgPty</code>. It also found the “allows” → “requests” narrowing, which is stronger than what it replaced.</td></tr>
+    <tr><td><strong>Open</strong></td><td>Whether any <em>jurisdiction's implementation</em> of R.16 adds an initiator field beyond the FATF minimum — the FATF text was read, seven national frameworks were not. Whether any regulator has published guidance on agent-initiated transfers. MiCA, FCA, MAS, HKMA and VARA specifics are as the source guide states them, not independently verified.</td></tr>
+  </tbody>
+</table>
+
+<footer class="doc">
+  Landscape sourced from <em>Stablecoin compliance in 2026: which rules apply to your business</em>,
+  Sumsub &mdash; credited as the publisher of the framework and segment analysis used in &sect;1.
+  Measurements from sealed research records EXP-007, EXP-009 and EXP-010, each verifiable by
+  checksum. <strong>This document is for general information. It is not legal advice and does not
+  assert compliance with any framework named in it.</strong> Prepared by Jayzilva, 2026-08-22.
+</footer>
