@@ -169,7 +169,7 @@ the same everywhere: attribution, a pre-execution decision, and an evidence trai
 Existing profiles: `aegs-1` (baseline), `aegs-2` (counterparty-aware, extends `aegs-1`), `none`.
 Requirements are `MUST_EXERCISE` / `MUST_RECORD` / `OPTIONAL`, each with a `recordPath`.
 
-**Shipped 2026-08-28** as [`profiles/stablecoin-1.json`](https://github.com/aegoll/aegs/blob/main/profiles/stablecoin-1.json).
+**Shipped 2026-08-28** as [`profiles/stablecoin-1.json`](https://github.com/tesoro-labs/aegs/blob/main/profiles/stablecoin-1.json).
 The design below is what was proposed; what shipped matches it, and what it cost is recorded after.
 
 A `stablecoin-1` profile extending `aegs-2` needs exactly two changes, and the restraint is the
@@ -212,7 +212,7 @@ fails, verified by planting exactly that on `aegs-2`. Whether the named class *g
 bar is a judgement no tool can make, and the clause says so rather than implying a rigour it lacks.
 
 PROF-6 keeps its text and gains a pointer. Clause identifiers are permanent
-([INTRO-4a](https://github.com/aegoll/aegs/blob/main/spec/00-introduction.md)), so this is a
+([INTRO-4a](https://github.com/tesoro-labs/aegs/blob/main/spec/00-introduction.md)), so this is a
 suffixed insertion, not a rewrite of a clause other documents cite.
 
 ---

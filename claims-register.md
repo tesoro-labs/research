@@ -16,7 +16,7 @@ sentence. `refuted` — investigated and found false.
 ## 1 · Measurement claims
 
 Every number here must trace to a sealed record in
-[`aegs/research/experiments`](https://github.com/aegoll/aegs/tree/main/research), verifiable by
+[`aegs/research/experiments`](https://github.com/tesoro-labs/aegs/tree/main/research), verifiable by
 `python research/tools/experiment.py verify`.
 
 | Claim | Evidence | Status |

@@ -4,7 +4,7 @@ Research artefacts for the white paper on autonomous economic governance, and fo
 proposal that may follow it.
 
 **This repository holds reasoning, not measurements.** Measurements live in
-[`aegs/research/experiments`](https://github.com/aegoll/aegs/tree/main/research) as sealed records
+[`aegs/research/experiments`](https://github.com/tesoro-labs/aegs/tree/main/research) as sealed records
 with checksums — EXP-007 through EXP-010 — and nothing here restates their numbers. A claim in this
 repository either cites a sealed record or is marked unsupported.
 
