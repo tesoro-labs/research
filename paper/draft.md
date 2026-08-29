@@ -1,10 +1,14 @@
 # Which control decided? Required attribution in pre-execution payment governance
 
-**Draft — §1–§7 of 10, 2026-08-28.** Structure and claims from [`outline.md`](outline.md), revised
-the same day after three prior-art surveys removed three claims. Every number cites a sealed record
-or a dated external reading. §9, the union of limitations from every record cited, is outstanding —
-but the limitations that bear on the instrument are stated in §6.2 rather than deferred to it, so a
-reader meets them next to the score rather than after it.
+**Complete draft, all ten sections, 2026-08-28.** Structure and claims from
+[`outline.md`](outline.md), revised the same day after three prior-art surveys removed three claims.
+
+Every number cites a sealed record or a dated external reading. The limitations that bear on the
+instrument also appear in §6.2, next to the score, rather than only in §9 — a reader should not have
+to reach the end to learn that the benchmark does not measure over-refusal.
+
+**Not yet done:** a citation apparatus (references are named inline), a venue, and a read by anyone
+who did not write it.
 
 ---
 
@@ -466,8 +470,153 @@ No anchor sink ships with the implementation. An append-only file beside the jou
 at one remove in any deployment where the agent's own host can rewrite it, and shipping one would
 make the gap *look* closed.
 
+## 8 · What the measurements cost
+
+A pre-execution control sits on the critical path of every payment, so its cost is a design
+constraint rather than a footnote. The measurement is reported here with its variance, because the
+variance turned out to be the finding.
+
+### 8.1 The numbers
+
+Three thousand decisions across ten runs, against the **published package installed from PyPI into
+a clean virtual environment** — the artefact a user gets, not a source checkout.
+
+| | Median across runs | Range | Spread |
+|---|---|---|---|
+| p50 | **168 µs** | 139–330 µs | **2.37×** |
+| p99 | 397.5 µs | 272–1,218 µs | 4.5× |
+
+**Zero model invocations. $0.00 inference cost.** The decision path invokes nothing probabilistic,
+which is what makes the figure a property of the code rather than of a provider's queue.
+
+### 8.2 The variance is the result
+
+Ten identical runs of the same measurement produced p50 figures spanning **2.37×**. The instrument
+is one laptop, shared with other work while measuring, and that is stated in the sealed record's
+limitations rather than discovered by a reader.
+
+The consequence is a rule rather than a caveat: **any single-run figure for this measurement carries
+no error bar and must not be quoted as precise.** That applies to our own earlier records. An
+earlier experiment reported **128 µs** from a single run — a number that sits *below the minimum* of
+the ten-run distribution measured later. It was not wrong when taken. It was unrepeatable, and
+quoting it would have implied a precision the method never had.
+
+We report this because a latency figure with no distribution behind it is the easiest number in this
+field to publish and the least useful to receive.
+
+### 8.3 The comparison we are not making
+
+OAP reports **53 ms p50** for its cloud API and **174 ms** for local evaluation. Ours is 168 µs.
+That looks like three orders of magnitude and **it is not a like-for-like comparison, so we do not
+make one.**
+
+OAP's cloud figure includes server-side processing at an edge network and excludes the client's
+network round-trip; its local figure is dominated by Python subprocess overhead. Ours is an
+in-process function call with no network, no subprocess and no signature verification on the path.
+**These measure different architectures answering to different deployment requirements** — a
+portable credential verified by an independent service is doing work an in-process library does not
+do, and that work is the reason someone would choose it.
+
+The honest statement is narrow: **a deterministic pre-execution decision need not cost a network
+round-trip**, and where the layer runs in the agent's own process it does not. Whether that matters
+depends entirely on whether the deployment can tolerate the trust assumption that comes with it,
+which §9 records as a limitation rather than resolving.
+
 ---
 
-*§8–§10 not yet drafted. §8 is what the measurements cost; §9 the union of limitations from every
-sealed record cited; §10 the open question of whether a governance standard can be validated by
-anyone other than its author.*
+## 9 · Limitations
+
+This section is the union of the limitations sections of every sealed record cited, plus the ones
+that belong to the work as a whole. It is not a summary of them.
+
+### 9.1 The benchmark
+
+**Every attack was written by the author of the system under test.** This is the single largest hole
+in the paper. An adversarial benchmark authored by the defender measures what the defender thought
+to try, and the correlation between that and what an attacker would try is unknown. OAP's
+capture-the-flag with external participants is better on exactly this axis and we say so in §3.1.
+
+**There are no benign twins, so over-refusal is unmeasured.** An implementation refusing all
+eighteen attacks scores 18/18 on this instrument. PayBench's matched trap/lookalike pairing exists
+precisely to prevent that, and adopting it would change what our score means. **Until it is adopted,
+the score should be read as an upper bound on defence and as silent about false positives** — which
+§2 argues is the expensive failure on an irreversible rail.
+
+**Eighteen attacks is small**, and the four classes were chosen by the same author.
+
+### 9.2 The measurements
+
+One laptop, shared with other work, Windows 11. p50 varies 2.37× across identical runs. No
+measurement here was taken on server hardware, under concurrency, or with a cold cache. The p99
+figures span 272–1,218 µs and no claim is made about tail behaviour under load.
+
+Nothing was settled and no model was invoked: this is the decision path in isolation, not an
+end-to-end payment.
+
+### 9.3 The specification and the standard
+
+**There is one implementation, and the same person wrote both it and the standard.** A specification
+with a single implementation is a description of that implementation, and no amount of further work
+by that person changes it. Machine-readable vectors and a conformance suite that installs
+separately exist so a second implementation is possible without permission; whether one appears is
+outside our control and is the open question of §10.
+
+**Four adjacent fields remain unsurveyed** — transaction monitoring and AML, cloud and FinOps quota
+systems, AI governance frameworks, and agent governance beyond Microsoft's toolkit. We do not
+believe they touch the three surviving claims. We believed the same about capability-based security
+on the morning of the day it removed one, and §3.3 records the result.
+
+### 9.4 Scope
+
+**One rail.** Everything measured here is x402 and stablecoin settlement. The card, AP2 and bank
+bindings are specified as shapes and not implemented, so any claim about generality is untested.
+
+**Two red-team findings are open by design.** Structuring is bounded rather than refused (§7.1);
+journal truncation is closed only against an external anchor and no anchor ships (§7.2).
+
+**No compliance is claimed with any framework.** The obligations discussed in §2 and §4 attach to
+issuers, service providers and obliged institutions. The layer described here is a library and is
+none of those. It consumes compliance signals and does not produce them: it performs no sanctions
+screening, holds no list, and implements no transfer-information protocol.
+
+**The AML profile it defines, it does not meet.** The specification defines a vertical conformance
+profile requiring a recorded AML position, and the reference implementation **does not conform to
+it** — there is no AML control, so no assessment key is emitted. We regard a profile the reference
+implementation fails as better evidence that the profile measures something than one it passes.
+
+---
+
+## 10 · Conclusion, and the question we cannot answer
+
+The argument of this paper is small and can be restated in three sentences.
+
+Where a control layer decides before an irreversible payment, the verdict is order-independent and
+the attribution is not — so a specification that requires attribution must also make evaluation
+order normative, and one that does not require it cannot tell a working control from a decorative
+one. Where a control bounds a risk rather than removing it, the specification should require the
+implementation to say which, because *bounded at a number you chose* and *eliminated* are different
+promises and only one of them is usually true. And where a benchmark scores a control layer, a
+refusal by a control that was not aiming at the attack is a coincidence rather than a defence, and
+counting it as a pass rewards the wrong thing.
+
+None of these needs the layer we built. They are properties a specification can require of anything
+in this category, and the category now has several independent implementations, none of which
+requires them.
+
+### The open question
+
+A conformance standard exists to let someone check an implementation they did not write. This one
+has been checked only by its author, against an implementation by the same author, using vectors by
+the same author. Every mechanism that would make third-party validation possible is in place —
+machine-readable vectors, a suite that installs separately and scores a record it has never seen
+before, profile manifests that are data rather than code — and none of it constitutes evidence that
+anyone else can or will do it.
+
+**So the honest closing question is not whether the claims in this paper are true. It is whether a
+governance standard can be validated by anyone other than its author, and we have no way to answer
+that from inside.**
+
+The three surveys in §3 are the closest thing to an answer we have: each removed a claim by
+consulting people who owed us nothing, and one removed a claim we had invented that same day. That
+is what external validation feels like from the receiving end, and it is the argument for wanting
+more of it rather than less.

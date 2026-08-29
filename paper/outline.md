@@ -1,7 +1,7 @@
 # Paper outline
 
-**Started:** 2026-08-21 · **Contribution revised:** 2026-08-28 · **Status: §1–§7 of 10 drafted** in
-[`draft.md`](draft.md), 2026-08-28. §8–§10 outstanding.
+**Started:** 2026-08-21 · **Contribution revised:** 2026-08-28 · **Status: complete draft**, all ten sections, in [`draft.md`](draft.md), 2026-08-28. Outstanding:
+a citation apparatus, a venue, and a read by anyone who did not write it.
 
 The gate held and it earned its keep. *"Drafting before they are done risks writing a claim the
 literature already owns"* — three of them did. OAP, PCAS and PayBench are all 2026, all in this
