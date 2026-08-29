@@ -10,6 +10,7 @@ repository either cites a sealed record or is marked unsupported.
 
 | Artefact | What it is for |
 |---|---|
+| [`lattice.md`](lattice.md) | P3.2. The narrowing lattice formalised, and the exact condition under which attribution becomes order-dependent. **It corrected the specification and the paper** |
 | [`prior-art.md`](prior-art.md) | The novelty test, done properly. Every claim of originality checked against what already exists, with confidence marked per item |
 | [`claims-register.md`](claims-register.md) | Every claim the paper intends to make, the specific evidence for it, and the claims that **cannot** be supported |
 | [`paper/outline.md`](paper/outline.md) | Structure, contribution statement, and the argument order |

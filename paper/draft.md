@@ -254,14 +254,34 @@ controls ran in.** This is a pleasant property and every system in §3 has some 
 
 Now ask a different question: *which control decided?*
 
-Suppose a treasury envelope narrows `APPROVE` to `REVIEW`, and a risk score then narrows `REVIEW` to
-`ESCALATE`. Run them in the other order and the answer is still `ESCALATE`. But the control that
-*determined* the outcome differs — in one order the last narrowing was risk, in the other it was
-treasury.
+Define the attributed control as **the last control that narrowed** — well defined because widening
+is impossible, so a control proposing something no stricter than the running verdict changes
+nothing.
+
+There is an exact condition for when that answer depends on order, and it is narrower than we first
+claimed. Once the running verdict reaches the maximum, no later control can narrow. So the last
+narrower is the **first control in the order attaining the maximum severity**, and therefore:
+
+> **Attribution depends on evaluation order if and only if more than one control proposes the
+> maximum.**
+
+An earlier draft of this paper, following the specification's own rationale, illustrated
+order-dependence with a treasury envelope narrowing to `REVIEW` and a risk score then narrowing to
+`ESCALATE`. **That example is wrong.** `ESCALATE` is attained only by risk, so risk is attributed
+under both orders; the example shows the verdict is order-independent and shows nothing about
+attribution. Formalising the lattice caught it, and both the specification and this section are
+corrected.
+
+A witness needs a tie. A sanctioned counterparty whose payment a spending limit also refuses: both
+propose `REJECT`, and whichever runs first is the sole narrower and takes the attribution.
+
+**Ties are the common case, not a corner.** Any two categorical refusals collide at the maximum by
+construction — barred counterparty, exhausted budget, revoked identity all produce `REJECT`.
 
 **So the moment a specification requires attribution, it has acquired an obligation the verdict
-never imposed: it must say something normative about evaluation order.** Not because order changes
-what happens, but because order changes what the record says about what happened.
+never imposed: it must say something normative about evaluation order.** It cannot know in advance
+whether a given decision has a tie at the top, so it must fix the order for all of them. Not because
+order changes what happens, but because order changes what the record says about what happened.
 
 That is the asymmetry. It is why attribution is not a free addition to a narrowing system, and it
 is why, we suspect, no surveyed system requires it: the verdict is the part that matters
@@ -288,6 +308,12 @@ and that does not become less true because a second constraint happened to bite 
 specification that requires attribution must also let an implementation declare certain controls
 **dispositive**: their finding determines attribution whenever it is *present*, whether or not it
 narrowed anything.
+
+The formalisation explains why this mechanism is forced rather than convenient. **A total order on
+verdicts cannot distinguish two controls that both reach the maximum** — the lattice has no
+structure left to break the tie with. Something outside it must, and a declared precedence among
+dispositive controls is that something. Where such a finding is present, attribution stops reading
+the evaluation order at all and is order-independent by construction.
 
 This clause exists because the earlier version was wrong and a conformance vector caught it. We
 report that rather than presenting the final rule as though it were the first one, because a
