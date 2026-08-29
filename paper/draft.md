@@ -570,6 +570,18 @@ the score should be read as an upper bound on defence and as silent about false 
 
 **Eighteen attacks is small**, and the four classes were chosen by the same author.
 
+**The threat model is an adversarial agent, not an adversarial host**, and one measured exposure
+falls outside it. The value envelopes sum settled rows only, so an authorisation nobody reports back
+on consumes no budget: ten $9 authorisations against a $50 daily ceiling leave the counter at zero.
+An attack was written for this and **withdrawn**, because the agent does not control whether
+settlement is reported — that is the embedding process, which this model trusts. Shaping it into an
+agent attack would have meant granting the adversary a capability the model does not give it in
+order to produce a finding. The exposure is real, is reported by a separate reconciliation surface,
+and is named here rather than counted in the score.
+
+A threat model in which the embedding process is untrusted is defensible — it is what a provider
+running someone else's agent code would want — and it is not the one measured here.
+
 ### 9.2 The measurements
 
 One laptop, shared with other work, Windows 11. p50 varies 2.37× across identical runs. No
