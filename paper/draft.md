@@ -1,14 +1,44 @@
 # Which control decided? Required attribution in pre-execution payment governance
 
-**Complete draft, all ten sections, 2026-08-28.** Structure and claims from
-[`outline.md`](outline.md), revised the same day after three prior-art surveys removed three claims.
+**Jayzilva** · Independent · 30 August 2026
 
-Every number cites a sealed record or a dated external reading. The limitations that bear on the
-instrument also appear in §6.2, next to the score, rather than only in §9 — a reader should not have
-to reach the end to learn that the benchmark does not measure over-refusal.
+> **Preprint draft.** Complete in ten sections. Not peer reviewed, and not yet read by anyone who
+> did not write it — which is also, as §10 argues, the paper's own open question.
 
-**Not yet done:** a citation apparatus (references are named inline), a venue, and a read by anyone
-who did not write it.
+## Abstract
+
+Autonomous agents can now initiate payments on settlement rails that do not govern the payer, and
+several systems published in 2026 place a deterministic decision before an agent's action. We do not
+propose another. We argue that this category, which already has independent implementations, is
+missing one property, and we say precisely what it costs to require it.
+
+Under narrowing-only composition — where each control may make a verdict stricter and never more
+permissive — the final verdict is the join of all proposals and is therefore independent of
+evaluation order. **The attributed control is not.** We show that the last control to narrow is the
+first control in the evaluation order attaining the maximum severity, and hence that attribution
+depends on order *if and only if more than one control attains that maximum*. Ties are the common
+case rather than a corner: any two categorical refusals collide at the top of the lattice by
+construction. A specification that requires attribution must therefore make evaluation order
+normative, and must supply structure outside the lattice — declared dispositive controls — to
+resolve the ties the ordering alone cannot.
+
+We make three contributions, and they are small. First, attribution as a **required and
+independently conformance-scorable** output: named on permit as well as on refusal, with precedence
+fixed in advance, checkable by a third party holding only machine-readable vectors. Second,
+**"bounded, not eliminated" as a disclosure obligation** — a normative requirement that an
+implementation state the residual its control leaves behind, with two worked cases. Third, a
+benchmark scoring rule, `DEFENDED_BY_ACCIDENT`, which counts *refused by a control the attack does
+not target* as a finding rather than a pass.
+
+We report the reference implementation's results honestly: 20 adversarial attacks, 17 defended, one
+defended by accident, two open by design. We also report that the instrument has no benign
+scenarios, so an implementation refusing everything would score perfectly — a defect we found by
+reading a competitor's design rather than by testing our own. Three prior-art surveys removed three
+larger claims during preparation, including one we invented and withdrew within a day, and §3
+reports each removal.
+
+**Keywords:** autonomous agents, payment authorization, policy attribution, conformance testing,
+adversarial benchmarking, stablecoins.
 
 ---
 
@@ -35,10 +65,10 @@ be required to have and mostly is not.
 
 Three systems published in 2026 place a deterministic decision before an agent's action. **OAP**
 intercepts tool calls at the framework layer and returns `ALLOW`, `DENY` or `ESCALATE` from a signed
-policy pack, with an Ed25519 decision record per call [Uchibeke 2026]. **PCAS** compiles policy into
+policy pack, with an Ed25519 decision record per call [1]. **PCAS** compiles policy into
 a Datalog-derived reference monitor and reports moving policy compliance from 48% to 93% across
 frontier models. **PayBench** benchmarks agents holding delegated payment authority across 226
-scenarios built as 113 matched trap/lookalike pairs [Plunkett 2026].
+scenarios built as 113 matched trap/lookalike pairs [4].
 
 OAP's own discussion observes that it and PCAS *"independently converge on the need for
 deterministic pre-action enforcement as a distinct architectural layer … This convergence suggests
@@ -112,7 +142,7 @@ rather than the survivors.
 
 ### 3.1 Contemporary pre-action authorization
 
-**OAP** [Uchibeke 2026] is the closest work. It is deterministic (*"Same inputs, same decision. No
+**OAP** [1] is the closest work. It is deterministic (*"Same inputs, same decision. No
 sampling, no temperature"*), bypass-resistant by running at the framework layer rather than in the
 model's reasoning, fail-closed, and auditable — every decision produces a signed, timestamped
 record. Denials carry a structured reason code such as `oap.limit_exceeded` or
@@ -148,7 +178,7 @@ unprecedented; §3.5 states what remains.
 **SPKI/SDSI** (1996) provides authorization certificates that delegate, and a reduction algorithm
 computing effective authority through a certificate chain. **Macaroons** (2014) provide caveat
 attenuation. The **object-capability** model provides attenuating proxies and the **membrane**
-pattern for transitive attenuation. Intent-Driven Computing [arXiv:2605.24036, 2026] proves that
+pattern for transitive attenuation. Intent-Driven Computing [3] proves that
 *"capabilities can only narrow, never widen, through composition"* with a mechanised Coq proof.
 
 An earlier version of this paper claimed a narrowing-only delegation clamp as a contribution, on the
@@ -666,3 +696,105 @@ The three surveys in §3 are the closest thing to an answer we have: each remove
 consulting people who owed us nothing, and one removed a claim we had invented that same day. That
 is what external validation feels like from the receiving end, and it is the argument for wanting
 more of it rather than less.
+
+---
+
+## References
+
+Marked by how each was consulted, because the paper argues that provenance should be visible and it
+would be strange to exempt its own bibliography. **`[read]`** — the source text was retrieved and
+read. **`[secondary]`** — consulted through summaries or through another paper's description.
+**`[unverified]`** — recalled, and the citation itself needs checking before submission.
+
+**[1]** `[read]` U. Uchibeke. *Before the Tool Call: Deterministic Pre-Action Authorization for
+Autonomous AI Agents.* APort Technologies, arXiv:2603.20953, March 2026. CC BY 4.0. Specification
+released under Apache 2.0, DOI 10.5281/zenodo.18901596. *Retrieved and read in full; all quotations
+in §3.1 and §5 verified against the PDF text.*
+
+**[2]** `[secondary]` PCAS — *Policy Compiler for Secure Agentic Systems.* Cited as reference [15]
+of [1], which reports it moving policy compliance from 48% to 93% and describes it as the most
+directly comparable academic work to OAP. **Not retrieved. Obtain and read before submission** —
+this paper's §3.1 characterisation of PCAS rests entirely on another paper's description of it.
+
+**[3]** `[read]` *Intent-Driven Computing: A Computational Model for Governed Autonomous Systems.*
+arXiv:2605.24036, 2026. *Retrieved and read; the narrowing-under-composition property and its
+mechanised proof (`CompositionPreserves.v`) verified in the source text.*
+
+**[4]** `[secondary]` C. Plunkett. *PayBench: A Benchmark for Unsafe Commercial Autonomy in AI Agents
+with Delegated Payment Authority.* 2026. `paybench.org`. *Design and scale read from the project
+site; the matched trap/lookalike construction described in §3.1 and §6.2 comes from that source, not
+from running the benchmark.*
+
+**[5]** `[read]` Financial Action Task Force. *International Standards on Combating Money Laundering
+and the Financing of Terrorism & Proliferation — The FATF Recommendations.* Consolidated text,
+2012–2025. `fatf-gafi.org`. *Retrieved 2026-08-28 and read; the required data set of INR.16 ¶9 and
+the glossary definition of "originator" verified directly.*
+
+**[6]** `[read]` Financial Action Task Force. *Explanatory note for revised R.16.* June 2025.
+`fatf-gafi.org`. *Retrieved 2026-08-28 and read; the "allows" → "requests" redline verified against
+the adopted text of [5].*
+
+**[7]** `[secondary]` Clearstream. *Usage Guideline CBPR+ pacs.008.001.08 — FIToFICustomerCreditTransfer.*
+*The `InitiatingParty [0..1]` and `UltimateDebtor [0..1]` elements were read from this usage
+guideline, which is an implementation profile of ISO 20022 rather than the standard itself.*
+
+**[8]** `[secondary]` interVASP Messaging Standard, IVMS101. *Data model consulted through published
+documentation rather than the standard text; the absence of an initiating-party element in §2.1 is
+stated on that basis.*
+
+**[9]** `[unverified]` A. Birgisson, J. G. Politz, Ú. Erlingsson, A. Taly, M. Vrable, M. Lentczner.
+*Macaroons: Cookies with Contextual Caveats for Decentralized Authorization in the Cloud.* NDSS 2014.
+**Venue, author list and title recalled and not verified.** The caveat-attenuation property this
+paper concedes to it is not in doubt; the citation is.
+
+**[10]** `[unverified]` C. Ellison et al. *SPKI Certificate Theory*, RFC 2693, and the SPKI/SDSI
+certificate-chain reduction literature, 1996 onward. **Recalled.** The claim §3.3 draws from it — a
+reduction algorithm computing effective authority through a delegation chain — was read in secondary
+descriptions, not in the RFC.
+
+**[11]** `[unverified]` B. Laurie, A. Langley, E. Kasper. *Certificate Transparency*, RFC 6962, 2013.
+**Recalled.** The signed-tree-head `(length, head)` commitment that §3.4 concedes the anchoring
+mechanism to is not in doubt; the citation details are.
+
+**[12]** `[secondary]` OASIS. *eXtensible Access Control Markup Language (XACML) Version 3.0*, 2013.
+*The optional `PolicyIdentifierList` in a response is the basis of §3.2 and was read in secondary
+description rather than in the specification.*
+
+**[13]** `[read]` AEGS — *Autonomous Economic Governance Standard*, version 0.1.
+`github.com/tesoro-labs/aegs`. The specification this paper's claims are expressed in: 95 clauses,
+167 machine-readable conformance vectors, four profiles. CC BY 4.0.
+
+**[14]** `[read]` tesoro, version 0.1.2. `github.com/tesoro-labs/tesoro`, `pypi.org/project/tesoro`.
+The reference implementation. Apache 2.0.
+
+**[15]** `[read]` Sealed experiment records EXP-007 through EXP-010,
+`github.com/tesoro-labs/aegs/tree/main/research/experiments`. Every measured figure in §6 and §8
+resolves to one of these, each carrying a checksum and its own limitations section. EXP-009
+supersedes EXP-008 because a measurement in it was wrong; the superseded record is retained
+unedited.
+
+**[16]** `[secondary]` Financial Crimes Enforcement Network and Office of Foreign Assets Control.
+*Permitted Payment Stablecoin Issuer AML/CFT Program and Sanctions Compliance Program Requirements.*
+Notice of proposed rulemaking, Federal Register, 10 April 2026. *Read through the Federal Register
+listing and published law-firm analyses; **the NPRM itself was not read**.*
+
+**[17]** `[secondary]` Sumsub. *Stablecoin compliance in 2026: which rules apply to your business.*
+The seven frameworks and six obliged-entity segments used in §2 and §4 are that document's
+structure, credited as its analysis rather than presented as ours.
+
+---
+
+### A note on this bibliography
+
+**Six of seventeen entries are marked `[read]`.** Three are `[unverified]` and would be checked
+before submission; the rest were consulted at one remove.
+
+Marking them is not modesty. This paper's central argument is that a record should say which control
+decided, and its method section claims that a source able to kill or save a claim gets read in its
+own text. A bibliography that presented all seventeen as equally consulted would contradict both
+positions on the last page.
+
+The three `[unverified]` entries share a property worth stating: **in each case the technical claim
+the paper concedes to that work is not in doubt** — macaroons attenuate, CT commits to a tree head,
+SPKI reduces a chain. It is the citation metadata that is unchecked, and the concession stands
+either way.

@@ -1,7 +1,12 @@
 # Paper outline
 
-**Started:** 2026-08-21 · **Contribution revised:** 2026-08-28 · **Status: complete draft**, all ten sections, in [`draft.md`](draft.md), 2026-08-28. Outstanding:
-a citation apparatus, a venue, and a read by anyone who did not write it.
+**Started:** 2026-08-21 · **Contribution revised:** 2026-08-28 · **Status: arXiv-ready but for two things**, 2026-08-30. [`draft.md`](draft.md) has all ten
+sections, an abstract, and a **17-entry bibliography marked by how each source was consulted** —
+six `[read]`, three `[unverified]`, the rest secondary.
+
+Outstanding: **retrieve PCAS** (entry `[2]`, currently characterised only through OAP's description
+of it, which is not good enough for a related-work section), check the three `[unverified]`
+citations, pick a venue, and get a read by somebody who did not write it.
 
 The gate held and it earned its keep. *"Drafting before they are done risks writing a claim the
 literature already owns"* — three of them did. OAP, PCAS and PayBench are all 2026, all in this

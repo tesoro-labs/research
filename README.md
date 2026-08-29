@@ -14,7 +14,7 @@ repository either cites a sealed record or is marked unsupported.
 | [`prior-art.md`](prior-art.md) | The novelty test, done properly. Every claim of originality checked against what already exists, with confidence marked per item |
 | [`claims-register.md`](claims-register.md) | Every claim the paper intends to make, the specific evidence for it, and the claims that **cannot** be supported |
 | [`paper/outline.md`](paper/outline.md) | Structure, contribution statement, and the argument order |
-| [`paper/draft.md`](paper/draft.md) | The paper itself. Complete draft, all ten sections |
+| [`paper/draft.md`](paper/draft.md) | The paper. Ten sections, an abstract, and a bibliography that marks how each of its seventeen sources was actually consulted |
 | [`stablecoin-agents-gap.md`](stablecoin-agents-gap.md) | The gap analysis: seven frameworks, six obliged entities, and the actor none of them name |
 | [`verification/`](verification/) | One file per claim checked against a primary source, including the checks that **refuted** what was written. Cited from wherever the claim is made |
 | [`report/`](report/) | The standing report — `body.html` and `report.css` are the editable parts, `build.py` assembles and renders, `where-we-stand.pdf` is the output |
