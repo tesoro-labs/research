@@ -16,12 +16,15 @@ repository either cites a sealed record or is marked unsupported.
 | [`paper/outline.md`](paper/outline.md) | Structure, contribution statement, and the argument order |
 | [`paper/draft.md`](paper/draft.md) | The paper itself. Complete draft, all ten sections |
 | [`stablecoin-agents-gap.md`](stablecoin-agents-gap.md) | The gap analysis: seven frameworks, six obliged entities, and the actor none of them name |
-| [`outreach/`](outreach/) | Two briefs for the two audiences the gap analysis identifies, with the rules that keep them honest and the objections they will meet. Drafts to adapt, never to send verbatim |
 | [`verification/`](verification/) | One file per claim checked against a primary source, including the checks that **refuted** what was written. Cited from wherever the claim is made |
 | [`report/`](report/) | The standing report — `body.html` and `report.css` are the editable parts, `build.py` assembles and renders, `where-we-stand.pdf` is the output |
 
 **Some documents referenced here are internal and deliberately unpublished** — the workspace plan,
-the context document, the upstream engagement plan and the business analysis. They are named without
+the context document, the upstream engagement plan, the business analysis, and **the outreach
+material and distribution plan**, which were removed from this repository on 2026-08-30 before it
+was made public. Draft approaches to named companies, a target list, and reasoning about those
+companies' businesses are working notes; a repository that publishes them is one those companies
+should not have to read. They are named without
 links because a link that 404s is worse than a plain reference. Everything a reader needs to check a
 claim in *this* repository is either here or in a sealed record in `aegs/research`.
 

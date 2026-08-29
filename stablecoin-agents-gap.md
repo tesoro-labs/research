@@ -291,28 +291,37 @@ it is *"provided for general information purposes"* and is not legal advice.
 
 ---
 
-## 8 · Why this is worth sending to a compliance platform
+## 8 · Who carries this, and what the interface between them looks like
 
-Two audiences, both from the guide's own segmentation.
+The guide's own segmentation names two kinds of obliged entity for whom the gap is sharpest.
 
-**A compliance platform** (Sumsub is the guide's publisher, and serves all six segments) has a
-customer problem arriving: clients whose users deploy agents, generating flow their monitoring was
-not calibrated for, with originator fields that name someone who pressed nothing. They will not
-build an economic governance layer — it is not their product — and **the interface is a signal
-exchange, not an integration**: they supply screening and identity, they consume attributed
-evidence.
+**A compliance platform serving all six segments** has a customer problem arriving rather than a
+product problem: its clients' users deploy agents, generating flow the monitoring was not calibrated
+for, with originator fields naming someone who pressed nothing.
 
-**A card issuer settling in stablecoins** — KAST is the guide's card-issuer segment at scale, 1M+
-users and ~$5bn annualised — has the sharper version. A card program's KYC is on the human; the
-*actor* may be software. Their checklist requires KYC at onboarding, sanctions and PEP screening,
-and card-scheme rules. **None of it models an autonomous actor spending against a verified human's
-balance.**
+Such a platform is not going to build an economic governance layer — it is not their product — and
+they should not. **The interface is a signal exchange, not an integration**: they supply screening
+and identity; a governance layer consumes those and produces attributed evidence. That division is
+enforced here rather than merely intended. `AMLAssessment` has no engine behind it, and the
+`sanctions` control is the highest-precedence dispositive control with nothing implementing it, so
+there is a named place for a real provider to land and no pretence that one has.
 
-The pitch is one sentence and it is not a product pitch:
+**A card issuer settling in stablecoins** has the sharper version. A card programme's KYC is on the
+human; the *actor* may be software spending against that verified human's balance. Onboarding
+checklists require KYC, sanctions and PEP screening, and card-scheme conformance — **none of which
+models an autonomous actor spending against a verified human's balance.**
 
-> When your customer's agent makes a payment, your Travel Rule record has an originator who did not
-> press the button. Here is the evidence that closes that gap — and here is what we deliberately do
-> not do.
+That segment is also the one already running the architecture this work describes. A card
+authorization is a deterministic, attributed decision rendered before the money moves, and ISO 8583
+has carried a decline-reason field since the 1980s. What changes is that the payer is software
+acting under authority conferred earlier, on a rail with no chargeback, at a rate no cardholder
+generates.
+
+> An earlier version of this section was written as outreach — *"why this is worth sending"*, with a
+> pitch and a per-company figure taken from press coverage. Both are removed. **A number about a
+> named private company, sourced from reporting and never verified, has no business in a document
+> whose whole claim is that it checks things**, and the outreach material's own rules forbid exactly
+> that. Audience-specific framing now lives outside this repository.
 
 ---
 
@@ -321,8 +330,14 @@ The pitch is one sentence and it is not a product pitch:
 Marked per the rules in [`README.md`](README.md).
 
 - `verified` — the guide's seven frameworks, six segments and checklists, read directly from the
-  PDF; the GENIUS Act timeline, independently confirmed; x402 volumes from x402.org; KAST's
-  segment, scale and funding; the missing `aml` key, measured from a live record.
+  PDF; the GENIUS Act timeline, independently confirmed; x402 volumes from x402.org; the missing
+  `aml` key, measured from a live record.
+- **Withdrawn 2026-08-30: *"KAST's segment, scale and funding"* was listed here as `verified` and
+  was not.** The segment came from the guide; the scale and funding figures came from reporting and
+  were never checked against a primary source. A per-company metric taken from press coverage does
+  not belong in the `verified` bucket of a document whose entire claim is that it checks things, and
+  it has been removed from §8 along with the outreach framing that carried it. **Found while
+  auditing this repository for publication**, which is the audit working.
 - `verified` — that R.16's required data set has no representation for delegated or autonomous
   initiation, checked 2026-08-28 against the consolidated FATF Recommendations 2012–2025 and the
   June 2025 explanatory note. The check **refuted the broader wording** — fiat `pacs.008` does carry
