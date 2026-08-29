@@ -391,14 +391,22 @@ No system surveyed in §3 has this outcome. OAP records a deny code but does not
 code was the one aiming at the attack; PayBench scores whether a refusal was appropriate, not where
 it came from.
 
+**The most recent addition found a defect rather than confirming one.** Two advisor-path attacks
+were added in August 2026, assuming a counterparty's text fully compromises the advisory model. The
+first confirmed the clamp holds. The second — an advisor returning a string that is not one of the
+four verdicts — raised an unhandled exception out of the decision path, so the layer *failed closed
+by crashing*: no verdict, no attributed control, no record. **A decision that never finishes has
+none of the four states to report**, which is a failure mode the state vocabulary cannot express and
+the benchmark can.
+
 `ERROR` is separated from the other three for a reason found the hard way: an attack with no handler
 silently reports nothing, and a suite full of errors looks like a clean run to anyone reading only a
 failure count. A test asserts every attack executed.
 
 ### 6.2 The instrument, and what is wrong with it
 
-Eighteen attacks across four classes — numeric, economic, evidence, authority. The current score is
-**15 defended, 1 by accident, 2 undefended, 0 errors**, recorded in a sealed experiment record with
+Twenty attacks across five classes — numeric, economic, evidence, authority, advisor. The current
+score is **17 defended, 1 by accident, 2 undefended, 0 errors**, recorded in a sealed experiment record with
 a checksum. A test compares a live run against that record and **fails on any difference in either
 direction**: a closed gap is as much a deliberate change as a regression, and both must be committed
 with the record updated.
@@ -407,13 +415,13 @@ Three properties of the instrument we state here rather than in the limitations 
 reader should not have to reach §9 to learn them:
 
 **It is smaller than the alternatives and it is not externally attacked.** OAP's CTF produced 4,437
-adversarial decisions across 1,151 sessions with external participants. Ours has eighteen attacks,
+adversarial decisions across 1,151 sessions with external participants. Ours has twenty attacks,
 all written by the author of the system under test. On the axis of independence, we are behind the
 work we are citing.
 
 **It has no benign twins.** PayBench pairs each trap scenario with a lookalike that is safe to
 permit, so an agent that refuses everything cannot score well. **We have no such pairing.** An
-implementation that refused all eighteen attacks would score 18/18 on our instrument, which means
+implementation that refused all twenty attacks would score 20/20 on our instrument, which means
 the instrument does not measure over-refusal at all — the failure mode §2 argues is expensive on an
 irreversible rail. This is a genuine defect and it was found by reading a competitor's design rather
 than by testing our own.
@@ -563,12 +571,12 @@ to try, and the correlation between that and what an attacker would try is unkno
 capture-the-flag with external participants is better on exactly this axis and we say so in §3.1.
 
 **There are no benign twins, so over-refusal is unmeasured.** An implementation refusing all
-eighteen attacks scores 18/18 on this instrument. PayBench's matched trap/lookalike pairing exists
+twenty attacks scores 20/20 on this instrument. PayBench's matched trap/lookalike pairing exists
 precisely to prevent that, and adopting it would change what our score means. **Until it is adopted,
 the score should be read as an upper bound on defence and as silent about false positives** — which
 §2 argues is the expensive failure on an irreversible rail.
 
-**Eighteen attacks is small**, and the four classes were chosen by the same author.
+**Twenty attacks is small**, and the five classes were chosen by the same author.
 
 **The threat model is an adversarial agent, not an adversarial host**, and one measured exposure
 falls outside it. The value envelopes sum settled rows only, so an authorisation nobody reports back
