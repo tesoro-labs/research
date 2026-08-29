@@ -20,7 +20,8 @@ that is the weakest claim, not the strongest, and a title promising a benchmark 
 
 Candidates, ordered by how well the paper could defend them:
 
-1. **"Which control decided? Attribution and delegation in pre-execution payment governance"**
+1. **"Which control decided? Required attribution in pre-execution payment governance"** — after
+   §3c, *delegation* cannot appear in the title of a paper that no longer claims it
 2. "What a spend control can honestly promise: bounded, not eliminated"
 3. "Attributed pre-execution governance for autonomous payments" — accurate, and generic enough
    next to three 2026 systems saying similar things
@@ -66,11 +67,15 @@ Two consequences to absorb before writing a word of prose:
    asymmetry follows and nothing surveyed states it: **the verdict is order-independent, the
    attribution is not**, so requiring attribution forces a normative evaluation order.
 
-2. **A delegation clamp, specified and implemented.** Narrowing-only authority with the limiting
-   step named in the record. The closest comparable system lists this in its own limitations as
-   *"OAP v1.0 does not formalize a delegation model … planned for v1.1."* **A gap the nearest
-   neighbour writes into its own paper is the strongest support a contribution can have**, and it
-   should be cited exactly that way rather than asserted.
+2. ~~**A delegation clamp, specified and implemented.**~~ **Withdrawn the same day it was added —
+   see [`prior-art.md` §3c](../prior-art.md).** Narrowing-only delegated authority is a 1996
+   Internet standard with a chain-reduction algorithm (SPKI/SDSI), a 2014 credential scheme
+   (macaroons), a named design pattern (attenuating proxies, membranes), and a 2026 paper with a
+   **mechanised Coq proof** that capabilities only narrow under composition (arXiv:2605.24036).
+   OAP not having formalised it says something about OAP and nothing about the field.
+
+   What survives — *the record names which step of the chain limited this action* — is an
+   **attribution** claim, and it is folded into claim 1 above rather than counted twice.
 
 3. **"Bounded, not eliminated" as a disclosure obligation.** Untouched by every survey so far: a
    specification that requires an implementation to state the *residual* its control leaves behind.
@@ -78,13 +83,24 @@ Two consequences to absorb before writing a word of prose:
    structuring; anchoring makes truncation detectable only *beyond the last publication*. Both ship
    with a vector that asserts the limit.
 
-4. **`DEFENDED_BY_ACCIDENT` as a scoring rule.** Counting *refused by a control the attack does not
+3b. **`DEFENDED_BY_ACCIDENT` as a scoring rule.** Counting *refused by a control the attack does not
    target* as a finding rather than a pass. OAP records a deny code and never asks whether it was
    the code aiming at the attack; PayBench scores whether a refusal was appropriate, not where it
    came from. **A paragraph in §6, not a section, and not the paper's lead.**
 
 **AEGL and AEGS remain the vehicle, not the contribution.** That was right before the survey and is
 more obviously right after it.
+
+### Size, stated plainly
+
+**Three claims, each a paragraph rather than a section.** Attribution (required, scored, on permit
+as well as denial, with precedence and the limiting delegation step named); *bounded, not
+eliminated* as a disclosure obligation; and one scoring rule. Three surveys removed one claim each,
+including one this document invented and refuted within a single day.
+
+**That is a workshop paper or a well-cited engineering report, not a conference submission.** Sizing
+it honestly now is cheaper than having a reviewer size it later, and the remaining claims have the
+property that matters: each is checked, and none is a category somebody else already owns.
 
 ### What the paper must now concede in its first two pages
 
@@ -94,6 +110,9 @@ Conceding late reads as being caught. Conceding first reads as knowing the field
 - That pre-execution deterministic authorization is an established category with independent
   implementations.
 - That this benchmark is smaller, author-written, and lacks matched benign scenarios.
+- **SPKI/SDSI (1996), macaroons, object-capability membranes, and arXiv:2605.24036's mechanised
+  proof** — narrowing-only delegated authority is thirty years old and machine-checked. The paper
+  claims attribution *of* the clamp, never the clamp.
 - That the latency comparison is not like-for-like: ~170 µs in-process against OAP's 53 ms p50
   cloud / 174 ms local. **Those numbers measure different things** and presenting them side by side
   without saying so would be the most easily caught dishonesty available.

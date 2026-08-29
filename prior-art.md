@@ -326,13 +326,71 @@ Microsoft AGT summary that called it "not about financial controls", and the R.1
 over-broad wording survived until the consolidated text was read. The rule is now explicit: **a
 source that can kill or save a claim is read in its own text, never in a summary of it.**
 
+## 3c · Capability-based security, done 2026-08-28 — the fourth claim lasted six hours
+
+§3b closed by promoting the delegation clamp to a contribution, on the strength of OAP listing
+delegation chains as unformalised in its own limitations. That was true about OAP and wrong about
+the field, and this section is the correction.
+
+### Narrowing-only delegation is thirty years old and has a mechanised proof
+
+| Source | What it already has |
+|---|---|
+| **SPKI/SDSI**, 1996 Internet standard | Authorization certificates that delegate, and **a reduction algorithm computing effective authority through a certificate chain**. Attenuation is the foundational principle, not an extension |
+| **Macaroons**, 2014 | Caveat attenuation. Already conceded in §1 |
+| **Object-capability model** | Attenuating proxies, and the **membrane** pattern for *deep* attenuation applied transitively to everything reachable |
+| **Intent-Driven Computing**, arXiv:2605.24036, 2026 | *"capabilities can only narrow, never widen, through composition"* — with a **mechanised Coq proof**, `CompositionPreserves.v`, `Theorem composition_preserves_governance` |
+
+**A claim to narrowing-only delegated authority is not defensible in any form.** It is a 1996
+standard with a reduction algorithm, a 2014 credential scheme, a design pattern with a name, and a
+2026 paper that machine-checked it. Presenting it as a contribution would be the single most
+embarrassing sentence available in this paper, and it survived exactly one section of this document
+before being caught.
+
+### What is left of it, and it is not a separate claim
+
+The surveyed systems compute or prove the *result* of attenuation — the effective authority. None
+of them **names the step that produced it**:
+
+- SPKI/SDSI's reduction algorithm yields effective authority. Whether any implementation records
+  *which certificate in the chain* performed the reduction is **`open`** — not checked, and the
+  claim below is written so it does not depend on the answer.
+- Intent-Driven Computing proves narrowing holds under composition. Its text contains **zero
+  occurrences of `attribut`, `which control`, or `delegat`** — it establishes the property and does
+  not report provenance.
+- OAP does not formalize delegation at all.
+
+So *"the record names which step of the chain limited this action"* is an **attribution** claim
+about delegation, not a delegation claim. **It belongs inside claim 1 and must not be counted
+twice.** The revised contribution statement now says so.
+
+### The pattern in this document is itself worth stating
+
+Three surveys, three contractions:
+
+| Survey | What it removed |
+|---|---|
+| §3a, 2026-08-21 | Certificate Transparency **refuted** the anchoring novelty. ISO 8583 narrowed attribution and supplied the objection |
+| §3b, 2026-08-28 | OAP, PCAS and PayBench **killed the benchmark claim** and narrowed attribution again |
+| §3c, 2026-08-28 | Capability-based security **killed the delegation claim** promoted six hours earlier in §3b |
+
+**The contribution is now three items, and each is a paragraph rather than a section.** That is
+a workshop paper or a well-cited engineering report, not a conference submission, and pretending
+otherwise would waste a reviewer's afternoon to no purpose.
+
+**That is a success condition for this document, not a failure.** Its stated job is *"much cheaper
+to discover it here than in review"*, and it has now removed three claims that would each have been
+removed by a reviewer instead — one of which the author invented and refuted inside a single day.
+The remaining claims are small, they are checked, and none of them is a category anyone else
+already owns.
+
 ## 4 · Adjacent fields to survey before publication
 
 Each could contain a paper that weakens a claim. None checked yet.
 
 | Field | Why it matters | Status |
 |---|---|---|
-| Capability-based security | Macaroons, SPKI/SDSI, object capabilities. The delegation clamp lives here | `open` |
+| Capability-based security | Macaroons, SPKI/SDSI, object capabilities. The delegation clamp lives here | **`verified` §3c — and it killed the delegation claim.** SPKI/SDSI 1996 has a chain reduction algorithm; Intent-Driven Computing has a Coq proof of narrowing under composition |
 | Transparency logs | CT, Trillian, witness/gossip protocols | **`verified` §3a — the mechanism is CT's. Claim shrunk** |
 | Payment authorization | ISO 8583, EMV, 3-D Secure | **`verified` §3a — the field exists and is deliberately vague. Claim strengthened.** EMV accuracy requirements still `open` |
 | Transaction monitoring / AML | Structuring detection is a solved commercial problem. Ours is deliberately deterministic; theirs is not | `open` |
