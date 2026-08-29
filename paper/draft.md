@@ -1,9 +1,10 @@
 # Which control decided? Required attribution in pre-execution payment governance
 
-**Draft — §1–§4 only, started 2026-08-28.** Structure and claims from
-[`outline.md`](outline.md), which was revised the same day after three prior-art surveys removed
-three claims. Every number here cites a sealed record or a dated external reading; see §9 (not yet
-drafted) for the union of limitations from every record cited.
+**Draft — §1–§7 of 10, 2026-08-28.** Structure and claims from [`outline.md`](outline.md), revised
+the same day after three prior-art surveys removed three claims. Every number cites a sealed record
+or a dated external reading. §9, the union of limitations from every record cited, is outstanding —
+but the limitations that bear on the instrument are stated in §6.2 rather than deferred to it, so a
+reader meets them next to the score rather than after it.
 
 ---
 
@@ -232,9 +233,241 @@ limit bound. Where a record is disclosed to a counterparty, that is a different 
 projection is different — the layer described here discloses a strict subset to a seller and never
 includes which control decided.
 
+## 5 · Attribution, and the order it forces
+
+This is the paper's principal claim, and it can be stated as a single observation about
+narrowing systems.
+
+### 5.1 The verdict is order-independent; the attribution is not
+
+Take a layer whose controls may only *narrow* a standing verdict — each control may make the outcome
+stricter and may never make it more permissive. Order the verdicts by severity: `APPROVE`,
+`REVIEW`, `ESCALATE`, `REJECT`.
+
+Under narrowing-only composition the final verdict is the **maximum severity any control proposed**.
+Maximum is commutative and associative, so **the final verdict does not depend on the order the
+controls ran in.** This is a pleasant property and every system in §3 has some version of it.
+
+Now ask a different question: *which control decided?*
+
+Suppose a treasury envelope narrows `APPROVE` to `REVIEW`, and a risk score then narrows `REVIEW` to
+`ESCALATE`. Run them in the other order and the answer is still `ESCALATE`. But the control that
+*determined* the outcome differs — in one order the last narrowing was risk, in the other it was
+treasury.
+
+**So the moment a specification requires attribution, it has acquired an obligation the verdict
+never imposed: it must say something normative about evaluation order.** Not because order changes
+what happens, but because order changes what the record says about what happened.
+
+That is the asymmetry. It is why attribution is not a free addition to a narrowing system, and it
+is why, we suspect, no surveyed system requires it: the verdict is the part that matters
+operationally, the verdict is order-free, and it is easy to conclude that order therefore does not
+need specifying.
+
+### 5.2 "The last control that narrowed" is well defined, and insufficient
+
+The default attribution rule is *the last control that narrowed the verdict*, and it is well defined
+precisely because widening is impossible. A control proposing something no stricter than the
+standing verdict changes nothing, so it did not narrow. The final narrowing is therefore unique.
+
+**The rule is a good default and it fails on a case that matters.** Consider a sanctioned
+counterparty whose payment a spending limit also refuses. The limit narrowed. The sanctions
+screening did not — the verdict was already `REJECT` when it ran. Under the default rule the record
+attributes the refusal to the **budget**.
+
+That record says an agent was stopped by a spending limit. The truth is that it tried to pay a
+sanctioned party. An operator who responds by raising the limit finds the payment still refused,
+with nothing on the record explaining why.
+
+**Some findings are categorical rather than quantitative.** A counterparty is barred or it is not,
+and that does not become less true because a second constraint happened to bite first. So a
+specification that requires attribution must also let an implementation declare certain controls
+**dispositive**: their finding determines attribution whenever it is *present*, whether or not it
+narrowed anything.
+
+This clause exists because the earlier version was wrong and a conformance vector caught it. We
+report that rather than presenting the final rule as though it were the first one, because a
+specification whose errors are visible is easier to trust than one whose history is not.
+
+### 5.3 Declaration is what stops this being an escape hatch
+
+An implementation free to nominate any control as dispositive after the fact can attribute a
+decision to whatever is convenient. Two requirements prevent that:
+
+- the set of dispositive controls and **their precedence relative to one another** must be fixed in
+  advance and in writing;
+- the evaluation order must be **documented**, not fixed by the specification.
+
+The second is deliberate and slightly uncomfortable. A standard cannot impose a sequence, because it
+does not know which controls a given implementation has. But an implementation whose order is
+undocumented has an attribution nobody can predict, and therefore **an attribution nobody can
+audit** — which is the entire failure this section exists to prevent.
+
+There is a consequence worth naming: a dispositive control must record its finding
+*unconditionally*, because attribution now depends on the finding being present rather than on its
+having changed the outcome. A control that stays silent when it did not narrow cannot be
+dispositive.
+
+### 5.4 Attribution on permit, which no surveyed system requires
+
+Every system in §3 that attributes at all attributes a **refusal**. OAP's reason codes attach to
+`DENY`. This is the natural place to start: a refusal demands an explanation because somebody is
+inconvenienced by it.
+
+**A permit is the more interesting record.** *"This payment was approved, and the control that let
+it through was the budget envelope with $12.40 of headroom"* answers a question a refusal record
+cannot: **would deleting this control have changed anything observable?** A layer whose controls all
+silently permit is indistinguishable from a layer with no controls at all, and the only way to tell
+them apart from the outside is to require the permit path to name its decider too.
+
+### 5.5 The property this buys, stated as a test
+
+The reason to require attribution rather than encourage it is that it converts an untestable
+assurance into a testable one.
+
+> **Delete a control. Does any record change?**
+
+If the answer is no, that control was decorative and its removal is invisible to every audit. This
+is checkable by a third party holding only the record format and a set of vectors — no access to
+the implementation, no cooperation from its author. That is what "independently scored" means here,
+and it is the part §3.5 identifies as unclaimed.
+
 ---
 
-*§5–§10 not yet drafted. §5 is attribution and the order asymmetry; §6 the scoring rule and the
-instrument under it; §7 the two bounded-not-eliminated cases; §8 measurement cost; §9 limitations;
-§10 the open question of whether a governance standard can be validated by anyone other than its
-author.*
+## 6 · The scoring rule, and the instrument under it
+
+### 6.1 `DEFENDED_BY_ACCIDENT`
+
+An adversarial benchmark of a *control layer* normally has two outcomes per attack: the attack
+succeeded, or it did not. We use four, and the third is the contribution:
+
+| Outcome | Meaning |
+|---|---|
+| `DEFENDED` | Refused, by the control the attack targets |
+| `DEFENDED_BY_ACCIDENT` | Refused, by a control that was not aiming at this attack |
+| `UNDEFENDED` | Not refused |
+| `ERROR` | The attack did not execute |
+
+**`DEFENDED_BY_ACCIDENT` is scored as a finding, not as a pass**, and the reason is that a
+coincidence has no maintenance contract. A trust-farming attack refused by a risk score that
+happened to fire is refused today and may not be refused after an unrelated weight is retuned. The
+record will not show a regression, because nothing that was ever asserted stopped being true.
+
+Requiring attribution (§5) is what makes this outcome *observable*. Without a record naming the
+control that refused, an accidental defence and an intentional one look identical from the outside —
+which is the practical argument for claim 1 restated as a measurement.
+
+No system surveyed in §3 has this outcome. OAP records a deny code but does not ask whether that
+code was the one aiming at the attack; PayBench scores whether a refusal was appropriate, not where
+it came from.
+
+`ERROR` is separated from the other three for a reason found the hard way: an attack with no handler
+silently reports nothing, and a suite full of errors looks like a clean run to anyone reading only a
+failure count. A test asserts every attack executed.
+
+### 6.2 The instrument, and what is wrong with it
+
+Eighteen attacks across four classes — numeric, economic, evidence, authority. The current score is
+**15 defended, 1 by accident, 2 undefended, 0 errors**, recorded in a sealed experiment record with
+a checksum. A test compares a live run against that record and **fails on any difference in either
+direction**: a closed gap is as much a deliberate change as a regression, and both must be committed
+with the record updated.
+
+Three properties of the instrument we state here rather than in the limitations section, because a
+reader should not have to reach §9 to learn them:
+
+**It is smaller than the alternatives and it is not externally attacked.** OAP's CTF produced 4,437
+adversarial decisions across 1,151 sessions with external participants. Ours has eighteen attacks,
+all written by the author of the system under test. On the axis of independence, we are behind the
+work we are citing.
+
+**It has no benign twins.** PayBench pairs each trap scenario with a lookalike that is safe to
+permit, so an agent that refuses everything cannot score well. **We have no such pairing.** An
+implementation that refused all eighteen attacks would score 18/18 on our instrument, which means
+the instrument does not measure over-refusal at all — the failure mode §2 argues is expensive on an
+irreversible rail. This is a genuine defect and it was found by reading a competitor's design rather
+than by testing our own.
+
+**Two findings are open and stay open.** Structuring is bounded rather than refused, for reasons
+given in §7. Journal truncation is closed only against an external anchor, and no anchor ships by
+default, so the benchmark reports the posture an installer actually gets rather than the one
+available to a careful operator.
+
+### 6.3 The lineage, including a wrong measurement
+
+The record chain behind the score is `EXP-008 → EXP-009 → EXP-010`. `EXP-009` **supersedes**
+`EXP-008` because a measurement in it was wrong: an attack was parameterised over a window its
+target control could not observe, so the result described the parameterisation rather than the
+control.
+
+The superseded record was not edited. It remains, marked superseded, with the reason attached.
+
+We include this because a record lineage containing a correction is better evidence about method
+than a clean one. A benchmark whose history shows no errors is either very carefully run or very
+carefully tidied, and a reader has no way to tell which.
+
+---
+
+## 7 · Bounded, not eliminated
+
+The third claim is a specification obligation: **where a control bounds a risk rather than
+eliminating it, the specification must require the implementation to say so.**
+
+This is unusual. Standards ordinarily specify what a control must *do*. The clause here specifies
+what an implementation must *admit* about the residual its control leaves behind — and both cases
+below ship with a conformance vector that asserts the limit, so the admission is scored rather than
+narrated.
+
+### 7.1 Count envelopes: unbounded becomes bounded-by-a-number
+
+A rate limit bounds how *fast* an agent acts. A value envelope bounds how *much* it spends. Neither
+bounds **how many times it acts over a window longer than the rate limit's**, and nothing multiplied
+*trivial* by *many* and compared the product to anything.
+
+The measured consequence: an agent pacing at **97 actions an hour — three per cent under a ceiling
+of 100 — was compliant indefinitely**, at 2,328 actions a day for $2.33 against a $50 daily budget.
+Every value envelope was out of reach because each action was trivial. Every rate limit was out of
+reach because the pacing sat under it.
+
+A cumulative count envelope closes it: the paced-evasion attack moved from undefended to defended,
+refused at action 500 and attributed to the treasury control citing `actions_per_day`.
+
+**What it does not do is eliminate structuring**, and the specification requires saying so. Forty
+payments of $0.001 five minutes apart total $0.04 and are nowhere near 500 actions. The envelope
+bounds the mechanism at a number the operator chose; it does not refuse this instance.
+
+**And it should not.** Forty trivial purchases in an afternoon is also what a legitimate agent does.
+A control that refused it would be producing a false positive on an irreversible rail, which §2
+argues is a real cost rather than a safe default. The honest statement is *bounded at a number you
+chose, not eliminated* — and the attack remains in the benchmark as `UNDEFENDED` rather than being
+reclassified.
+
+### 7.2 Anchoring: detectable, beyond a bound the operator chose
+
+A hash chain detects edits and cannot detect truncation of its own tail, because **any prefix of a
+valid chain is itself a valid chain.** The missing information is *that there was more*, and no
+amount of internal linking supplies it.
+
+An external anchor supplies it: a `(length, head)` commitment published where the journal's writer
+cannot reach. This is Certificate Transparency's signed tree head applied to a spend journal, and
+§3.4 records that the survey establishing this refuted the novelty we had claimed for the mechanism.
+
+**The bound is the honest part.** An anchor is published at some cadence, so everything appended
+since the last publication is unattested and remains silently truncatable. Anchoring does not make
+truncation detectable; it makes truncation detectable **beyond a bound the operator chose**. A
+vector asserts the difference rather than describing it.
+
+Verification therefore has four outcomes, not two: `consistent`, `truncated`, `diverged`, and
+`unknown` — and **`unknown` is never a pass.** An anchor that cannot be read is a fact about the
+anchor, and reporting it as agreement would let anyone able to partition the verifier from the sink
+also make the journal verify.
+
+No anchor sink ships with the implementation. An append-only file beside the journal is that journal
+at one remove in any deployment where the agent's own host can rewrite it, and shipping one would
+make the gap *look* closed.
+
+---
+
+*§8–§10 not yet drafted. §8 is what the measurements cost; §9 the union of limitations from every
+sealed record cited; §10 the open question of whether a governance standard can be validated by
+anyone other than its author.*

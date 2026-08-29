@@ -13,7 +13,7 @@ repository either cites a sealed record or is marked unsupported.
 | [`prior-art.md`](prior-art.md) | The novelty test, done properly. Every claim of originality checked against what already exists, with confidence marked per item |
 | [`claims-register.md`](claims-register.md) | Every claim the paper intends to make, the specific evidence for it, and the claims that **cannot** be supported |
 | [`paper/outline.md`](paper/outline.md) | Structure, contribution statement, and the argument order |
-| [`paper/draft.md`](paper/draft.md) | The paper itself. §1–§4 drafted; §5–§10 outstanding |
+| [`paper/draft.md`](paper/draft.md) | The paper itself. §1–§7 of 10 drafted |
 | [`stablecoin-agents-gap.md`](stablecoin-agents-gap.md) | The gap analysis: seven frameworks, six obliged entities, and the actor none of them name |
 | [`outreach/`](outreach/) | Two briefs for the two audiences the gap analysis identifies, with the rules that keep them honest and the objections they will meet. Drafts to adapt, never to send verbatim |
 | [`verification/`](verification/) | One file per claim checked against a primary source, including the checks that **refuted** what was written. Cited from wherever the claim is made |
