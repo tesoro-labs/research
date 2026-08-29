@@ -157,8 +157,31 @@ OAP's own limitations record that it does not formalise a delegation model (*"pl
 that its `ESCALATE` path is specified but unimplemented in the reference, and that attack
 sequence-based structuring is future work.
 
-**PCAS** compiles policy to a Datalog-derived reference monitor, permitting recursive rule
-composition where OAP trades expressiveness for constant-time evaluation. **PayBench** [Plunkett
+**PCAS** [2] is the strongest academic work in this space and the closest to ours in ambition,
+though not in subject. Its system, FORGE, models an agentic execution as a **dependency graph of
+causal relationships** between messages, tool calls and tool results, rather than as a linear
+history — because policies whose satisfaction depends on information flow cannot be expressed over
+a transcript. Policies are Datalog-derived rules accounting for transitive flow and cross-agent
+provenance; a reference monitor intercepts every action and blocks violations before execution. It
+reports policy compliance rising from 48% to 93% across frontier models on a customer-service
+benchmark, with case studies in prompt-injection defence, multi-agent approval workflows, and
+organisational policy.
+
+Two distinctions matter for what follows, and both required reading the paper rather than OAP's
+description of it.
+
+**PCAS attributes events to entities, not decisions to controls.** It defines a principal function
+mapping each event to its producing entity, which answers *who acted*. Our claim concerns *which
+control decided*, and the paper contains no occurrence of the question in that sense. **This is a
+third independent system placing a deterministic decision before an action without requiring the
+record to name the control that produced it**, which is the strongest support claim 1 has.
+
+**Its subject is information flow; ours is money.** FORGE governs any tool call and reasons about
+what an action depends on. It has no notion of an envelope, of integer minor units, of settlement,
+or of an irreversible rail. Payments appear in its evaluation only as domain content in a retail
+benchmark — tracking which payment method an order used — rather than as a governed economic
+quantity. Neither system subsumes the other, and saying so plainly is more useful than claiming
+adjacency. **PayBench** [Plunkett
 2026] benchmarks agent behaviour under three control conditions — no policy, prompt-based policy,
 hard tool constraints — using matched trap/lookalike pairs so that blanket refusal cannot score
 well. **EcoAgent-Bench** scores agents' economic decision *quality* under budget constraints rather
@@ -711,10 +734,13 @@ Autonomous AI Agents.* APort Technologies, arXiv:2603.20953, March 2026. CC BY 4
 released under Apache 2.0, DOI 10.5281/zenodo.18901596. *Retrieved and read in full; all quotations
 in §3.1 and §5 verified against the PDF text.*
 
-**[2]** `[secondary]` PCAS — *Policy Compiler for Secure Agentic Systems.* Cited as reference [15]
-of [1], which reports it moving policy compliance from 48% to 93% and describes it as the most
-directly comparable academic work to OAP. **Not retrieved. Obtain and read before submission** —
-this paper's §3.1 characterisation of PCAS rests entirely on another paper's description of it.
+**[2]** `[read]` N. Palumbo, S. Choudhary, J. Choi, G. Amir, P. Chalasani, S. Jha. *Policy Compiler
+for Secure Agentic Systems.* University of Wisconsin–Madison, Cornell University, Langroid.
+arXiv:2602.16708, 2026. The system is named FORGE. *Retrieved and read 2026-08-30, having been
+flagged in the first version of this bibliography as characterised only through [1]'s description
+of it. Reading it changed §3.1: the paper attributes events to entities via a principal function,
+which is a different question from which control decided, and it contains no occurrence of the
+latter — making it a third independent confirmation rather than a competitor for claim 1.*
 
 **[3]** `[read]` *Intent-Driven Computing: A Computational Model for Governed Autonomous Systems.*
 arXiv:2605.24036, 2026. *Retrieved and read; the narrowing-under-composition property and its
@@ -786,8 +812,12 @@ structure, credited as its analysis rather than presented as ours.
 
 ### A note on this bibliography
 
-**Six of seventeen entries are marked `[read]`.** Three are `[unverified]` and would be checked
+**Seven of seventeen entries are marked `[read]`.** Three are `[unverified]` and would be checked
 before submission; the rest were consulted at one remove.
+
+Entry `[2]` moved from `[secondary]` to `[read]` on 2026-08-30, and the move changed §3.1 rather
+than merely upgrading a label — which is the argument for retrieving sources you have only heard
+described.
 
 Marking them is not modesty. This paper's central argument is that a record should say which control
 decided, and its method section claims that a source able to kill or save a claim gets read in its

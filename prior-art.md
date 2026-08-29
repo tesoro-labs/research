@@ -220,10 +220,23 @@ in a summary — see the note at the end of this section for why that mattered.
 | **An adversarial benchmark with external attackers** | **4,437 adversarial decisions across 1,151 attack sessions**, a live CTF against a banking agent |
 | Framework mappings | NIST AI RMF, OWASP Agentic Top 10, SAFE-MCP |
 
-It also names **PCAS** (Policy Compiler for Secure Agentic Systems — a Datalog-derived reference
-monitor that moved policy compliance from 48% to 93%) and says the two *"independently converge on
-the need for deterministic pre-action enforcement as a distinct architectural layer … This
-convergence suggests the category is real, not an artifact of a single system's design."*
+It also names **PCAS** and says the two *"independently converge on the need for deterministic
+pre-action enforcement as a distinct architectural layer … This convergence suggests the category is
+real, not an artifact of a single system's design."*
+
+**PCAS was read directly on 2026-08-30** (arXiv:2602.16708; the system is FORGE; Palumbo, Choudhary,
+Choi, Amir, Chalasani and Jha, of Wisconsin–Madison, Cornell and Langroid) rather than left as
+OAP's description of it, and reading it moved a claim:
+
+- It models execution as a **dependency graph of causal relations** rather than a transcript, with
+  Datalog rules over transitive information flow and cross-agent provenance, and a reference monitor
+  blocking before execution. 48% → 93% compliance on a customer-service benchmark.
+- **It attributes events to entities, not decisions to controls.** A principal function maps each
+  event to its producer — *who acted*. `which policy` and `which rule` do not appear. So it is a
+  **third independent system placing a deterministic decision before an action without requiring the
+  record to name the control that produced it.** That is support for claim 2, not competition.
+- **Its subject is information flow; ours is money.** No envelope, no integer minor unit, no
+  settlement, no irreversible rail. Payments appear only as retail-benchmark domain content.
 
 **They are right, and that sentence retires a claim this project has not been careful enough about.**
 Pre-execution deterministic authorization is not a category anyone here invented. It has at least
