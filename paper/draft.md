@@ -798,8 +798,8 @@ record, and responsibility for all of it is the author's.
 - §6.2 corrected: the twenty-attack score is in a baseline file checked by a test, not in a sealed
   record; the last sealed record covers eighteen attacks.
 - References [9] to [11] verified against primary sources; references [18] to [25] added.
-- Reference [14] updated to tesoro 0.1.3, which carries the same code as 0.1.2 plus a source
-  distribution.
+- Reference [14] updated to tesoro 0.1.3, the same code as 0.1.2. Its source distribution is on the
+  GitHub release rather than PyPI, which refused the filename.
 
 ---
 
