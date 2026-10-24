@@ -57,6 +57,10 @@ th, td { border-bottom: 1px solid #c8c8c8; padding: 0.3rem 0.4rem; text-align: l
 th { border-bottom: 1.5px solid #1a1a1a; }
 a { color: #1f4e8c; text-decoration: none; }
 hr { border: 0; border-top: 1px solid #c8c8c8; margin: 1.4rem 0; }
+figure { margin: 1.2rem 0; break-inside: avoid; text-align: center; }
+figure img { max-width: 100%; height: auto; }
+figcaption { font-size: 0.88em; color: #4f5d75; text-align: left; margin-top: 0.4rem; font-style: italic; }
+td, th { font-size: 0.92em; }
 </style>
 </head>
 <body>
@@ -68,484 +72,467 @@ pre-execution payment governance</h1>
 control decided? Required attribution in pre-execution payment
 governance</h1>
 <p><strong>Jayath de Silva</strong> (<a href="https://orcid.org/0009-0007-1855-4158">ORCID
-0009-0007-1855-4158</a>) · Independent · Draft v0.1, October 2026</p>
+0009-0007-1855-4158</a>) · Independent · Draft v0.2, October 2026</p>
 <blockquote>
-<p><strong>Preprint draft.</strong> Complete in ten sections. Not peer
-reviewed, and not yet read by anyone who did not write it — which is
-also, as §10 argues, the paper&#39;s own open question.</p>
+<p><strong>Preprint draft.</strong> Not peer reviewed, and not yet read
+by anyone who did not write it. §11 argues that this is the paper&#39;s own
+open question.</p>
 </blockquote>
 <h2 id="abstract">Abstract</h2>
-<p>Autonomous agents can now initiate payments on settlement rails that
-do not govern the payer, and several systems published in 2026 place a
-deterministic decision before an agent&#39;s action. We do not propose
-another. We argue that this category, which already has independent
-implementations, is missing one property, and we say precisely what it
-costs to require it.</p>
-<p>Under narrowing-only composition — where each control may make a
-verdict stricter and never more permissive — the final verdict is the
-join of all proposals and is therefore independent of evaluation order.
-<strong>The attributed control is not.</strong> We show that the last
-control to narrow is the first control in the evaluation order attaining
-the maximum severity, and hence that attribution depends on order <em>if
-and only if more than one control attains that maximum</em>. Ties are
-the common case rather than a corner: any two categorical refusals
-collide at the top of the lattice by construction. A specification that
-requires attribution must therefore make evaluation order normative, and
-must supply structure outside the lattice — declared dispositive
-controls — to resolve the ties the ordering alone cannot.</p>
-<p>We make three contributions, and they are small. First, attribution
-as a <strong>required and independently conformance-scorable</strong>
-output: named on permit as well as on refusal, with precedence fixed in
-advance, checkable by a third party holding only machine-readable
-vectors. Second, <strong>&quot;bounded, not eliminated&quot; as a disclosure
-obligation</strong> — a normative requirement that an implementation
-state the residual its control leaves behind, with two worked cases.
-Third, a benchmark scoring rule, <code>DEFENDED_BY_ACCIDENT</code>,
-which counts <em>refused by a control the attack does not target</em> as
-a finding rather than a pass.</p>
-<p>We report the reference implementation&#39;s results honestly: 20
-adversarial attacks, 17 defended, one defended by accident, two open by
-design. We also report that the instrument has no benign scenarios, so
-an implementation refusing everything would score perfectly — a defect
-we found by reading a competitor&#39;s design rather than by testing our
-own. Three prior-art surveys removed three larger claims during
-preparation, including one we invented and withdrew within a day, and §3
-reports each removal.</p>
-<p><strong>Keywords:</strong> autonomous agents, payment authorization,
-policy attribution, conformance testing, adversarial benchmarking,
-stablecoins.</p>
+<p>AI agents can now pay for things on their own, over settlement rails
+that do not govern the payer. Several systems published in 2026 put a
+deterministic check in front of an agent&#39;s action. We do not propose
+another one. We argue that this category, which already has independent
+implementations, is missing one property, and we work out what it costs
+to require it.</p>
+<p>When controls can only make a verdict stricter, the final verdict is
+the strictest one any control proposed, so the order the controls run in
+does not change it. The record of which control decided is a different
+matter. The last control to tighten the verdict is the first one in the
+order to reach the maximum, so attribution depends on order exactly when
+two or more controls reach that maximum. That happens all the time: any
+two outright refusals tie at the top. A specification that requires
+attribution therefore has to fix the evaluation order, and has to
+declare which controls win a tie.</p>
+<p>We make three small contributions. Attribution as a required output
+that a third party can score from machine-readable vectors, on approvals
+as well as refusals. A disclosure rule we call <em>bounded, not
+eliminated</em>, which obliges an implementation to state what its
+control leaves behind. And a benchmark scoring rule,
+<code>DEFENDED_BY_ACCIDENT</code>, which counts an attack refused by a
+control that was not aiming at it as a finding rather than a pass.</p>
+<p>Version 0.2 adds a map of where such a control can sit on an x402
+payment (a pre-tool hook, the client&#39;s spend controls, a custodial
+signer, an agent gateway, the seller, the facilitator) and what each
+position can and cannot see. A pre-tool hook decides before the seller
+has named a price. A gateway sees the signed amount but cannot revoke
+it. No position holds an independent view of what the price should have
+been.</p>
+<p>The reference implementation scores 17 of 20 attacks defended, one by
+accident and two open by design. The instrument has no benign scenarios,
+so an implementation that refused everything would score perfectly; we
+found that defect by reading a competitor&#39;s design. Three prior-art
+surveys removed three larger claims while we wrote this, and §3 reports
+each removal.</p>
+<p><strong>Keywords:</strong> autonomous agents, agent payments, x402,
+payment authorization, policy attribution, conformance testing,
+adversarial benchmarking, agent gateways, stablecoins.</p>
 <hr />
-<h2 id="1--introduction">1 · Introduction</h2>
-<p>An agent that can pay is an agent that can overpay, and the rails it
-pays over do not govern the payer.</p>
-<p>The scale is measured rather than projected. On 21 August 2026 the
-x402 protocol reported <strong>75.41 million transactions and $24.24
-million of volume over 30 days</strong> — a <strong>$0.32 average
-payment</strong> — on a protocol whose own documentation specifies no
-spend limits, no buyer-side authorization, and no governance layer. A
-settlement rail is not required to have opinions about whether a payment
-should happen. It is required to make it happen, and it does.</p>
-<p>That leaves a gap that is easy to describe and awkward to fill. The
-seller is protected by getting paid. The chain is protected by finality.
-<strong>Nobody in the transaction is positioned to ask whether the buyer
-should have bought</strong>, because the only party with that interest
-is the buyer&#39;s principal, who is not present at the moment of payment
-and may not learn of it for hours.</p>
-<p>This paper is about the layer that occupies that position, and about
-one property that layer should be required to have and mostly is
-not.</p>
-<h3 id="the-category-is-not-new-and-saying-so-early-is-the-point">The
-category is not new, and saying so early is the point</h3>
-<p>Three systems published in 2026 place a deterministic decision before
-an agent&#39;s action. <strong>OAP</strong> intercepts tool calls at the
-framework layer and returns <code>ALLOW</code>, <code>DENY</code> or
-<code>ESCALATE</code> from a signed policy pack, with an Ed25519
-decision record per call [1]. <strong>PCAS</strong> compiles policy into
-a Datalog-derived reference monitor and reports moving policy compliance
-from 48% to 93% across frontier models. <strong>PayBench</strong>
-benchmarks agents holding delegated payment authority across 226
-scenarios built as 113 matched trap/lookalike pairs [4].</p>
-<p>OAP&#39;s own discussion observes that it and PCAS <em>&quot;independently
-converge on the need for deterministic pre-action enforcement as a
-distinct architectural layer … This convergence suggests the category is
-real, not an artifact of a single system&#39;s design.&quot;</em></p>
-<p><strong>We agree, and we are the third data point rather than the
-first.</strong> A paper introducing this category would be introducing
-something with several independent implementations. What follows is
-therefore not a proposal for a layer. It is an argument about one output
-that layer should be obliged to produce, and evidence that the
-obligation is currently absent.</p>
-<h3 id="contribution">Contribution</h3>
+<h2 id="1--an-agent-that-can-pay-can-overpay">1 · An agent that can pay
+can overpay</h2>
+<p>The scale is already real. On 21 August 2026 the x402 protocol
+reported 75.41 million transactions and $24.24 million of volume over 30
+days, an average payment of $0.32. The protocol&#39;s own documentation
+specifies no spend limits, no buyer-side authorization and no governance
+layer. That is reasonable for a settlement rail, whose job is to move
+the money once asked.</p>
+<p>So nobody in the transaction asks whether the buyer should have
+bought. The seller is protected by being paid and the chain by finality.
+The only party with an interest in the question is the person or
+organisation the agent works for, and they are not present when the
+payment happens and may not hear about it for hours.</p>
+<p>This paper is about the layer that sits in that gap, and about one
+property that layer should be required to have.</p>
+<h3 id="others-got-here-first-and-that-helps-the-argument">Others got
+here first, and that helps the argument</h3>
+<p>Three systems published in 2026 put a deterministic decision in front
+of an agent&#39;s action. OAP intercepts tool calls at the framework layer
+and returns <code>ALLOW</code>, <code>DENY</code> or
+<code>ESCALATE</code> from a signed policy pack, with an Ed25519-signed
+decision record per call [1]. PCAS compiles policy into a
+Datalog-derived reference monitor and reports policy compliance rising
+from 48% to 93% across frontier models [2]. PayBench benchmarks agents
+holding delegated payment authority across 226 scenarios, built as 113
+matched pairs of a trap and a safe lookalike [4].</p>
+<p>OAP&#39;s authors noticed the same thing: they and PCAS
+<em>&quot;independently converge on the need for deterministic pre-action
+enforcement as a distinct architectural layer … This convergence
+suggests the category is real, not an artifact of a single system&#39;s
+design.&quot;</em> We agree, and we are the third data point. So this paper
+does not propose a layer. It argues for one output that every such layer
+should be obliged to produce, and shows that none of them is currently
+obliged to produce it.</p>
+<h3 id="what-we-claim">What we claim</h3>
 <ol type="1">
-<li><strong>Attribution as a required and independently scored
-output</strong> — the record must name the control that decided, on
-<strong>permit</strong> as well as on refusal; must resolve
-<strong>which</strong> control is reported when several would have
-refused; and must name the step that limited a delegated authority.
-Requiring it forces a normative evaluation order even though the verdict
-itself is order-independent (§5).</li>
+<li><strong>Attribution as a required, independently scored
+output.</strong> The record names the control that decided, on approvals
+as well as refusals. When several controls would have refused, the rule
+for which one is named is fixed in advance. Requiring this forces a
+normative evaluation order, even though the verdict itself does not
+depend on order (§5).</li>
 <li><strong>&quot;Bounded, not eliminated&quot; as a disclosure
-obligation</strong> — a specification clause requiring an implementation
-to state the residual its control leaves behind, with two worked cases
-(§7).</li>
-<li><strong>A scoring rule</strong>, <code>DEFENDED_BY_ACCIDENT</code>:
-in an adversarial benchmark of a control layer, counting <em>refused by
-a control the attack does not target</em> as a finding rather than a
-pass (§6).</li>
+obligation.</strong> Where a control limits a risk without removing it,
+the specification makes the implementation say so, and a conformance
+vector checks the statement (§7).</li>
+<li><strong>A scoring rule, <code>DEFENDED_BY_ACCIDENT</code>.</strong>
+In an adversarial benchmark of a control layer, an attack refused by a
+control it was not aimed at counts as a finding (§6).</li>
 </ol>
-<p>These are small. Three prior-art surveys removed three larger claims,
-one of which we invented and withdrew within a day, and §3 reports what
-each removed. We think the remaining three are correct and unclaimed,
-and we would rather defend three narrow things than lose an afternoon of
-a reviewer&#39;s time to a fourth.</p>
+<p>Section 8 adds an analysis we do not claim as a contribution: where
+on the payment path such a control can sit, and what each position can
+see.</p>
+<p>These claims are small on purpose. Three prior-art surveys each
+removed a larger claim, and one removed a claim we had invented that
+same day. We would rather defend three narrow points than spend a
+reviewer&#39;s afternoon on a fourth.</p>
 <hr />
-<h2 id="2--why-irreversibility-moves-the-control-point">2 · Why
-irreversibility moves the control point</h2>
-<p>The controls in this space look unusual until the settlement
-properties are stated, after which they look forced.</p>
-<p>A card payment is a promise that can be broken. Authorization,
-clearing and settlement are separate events; a cardholder can dispute;
-an issuer can charge back; a network can reverse. This gives the whole
-system a property that shapes every control built on it: <strong>a
-detective control still works.</strong> Finding a fraudulent transaction
-on Tuesday can undo a payment made on Monday, so it is rational to
-invest heavily in monitoring, scoring and review after the fact.</p>
-<p>A stablecoin transfer on a public chain has none of that. There is no
-chargeback, no recall, and no issuer standing behind the payer. Once the
-transaction is final, a control that notices a problem has produced
-<strong>a description of a loss, not a recovery.</strong></p>
-<p>Two consequences follow, and they are the reason this layer is shaped
-as it is.</p>
-<p><strong>The control point moves to before execution.</strong> Not
-because pre-execution controls are better in general — they are worse in
-one important way, discussed below — but because after execution there
-is nothing left for a control to do except write things down.</p>
-<p><strong>A refusal costs something and must be accounted for.</strong>
-A control that refuses a legitimate payment on an irreversible rail has
-not merely inconvenienced anyone; it has failed to buy something the
-principal wanted, and there is no dispute process to correct it. This
-cuts directly against the instinct to refuse when uncertain, and it is
-why the benchmark in §6 treats over-refusal as a defect rather than as
-caution — and why, in §9, we report that our own instrument fails to
-measure it.</p>
-<p><strong>The honest cost of moving early.</strong> A pre-execution
-control decides on less information than a post-hoc one. It cannot see
-whether the goods arrived, whether the counterparty later proved
-fraudulent, or whether the same pattern repeated across a hundred other
-principals. Systems that monitor after the fact see all of that.
-<strong>We are not claiming the earlier control is more accurate. We are
-claiming it is the only one whose output can still change the
-outcome</strong>, and that this makes the accuracy trade a forced one
-rather than a chosen one.</p>
+<h2 id="2--why-the-check-has-to-come-first">2 · Why the check has to
+come first</h2>
+<p>The controls in this space look odd until you look at how the money
+settles.</p>
+<p>A card payment can be undone. Authorization, clearing and settlement
+happen at different times, a cardholder can dispute, and an issuer can
+charge back. Every control in that system can rely on one fact: finding
+a fraudulent payment on Tuesday can still reverse a payment made on
+Monday. That makes monitoring and after-the-fact review worth the
+investment.</p>
+<p>A stablecoin transfer on a public chain has no chargeback, no recall,
+and no issuer standing behind the payer. Once it is final, a control
+that notices a problem can only describe the loss.</p>
+<p>Two things follow.</p>
+<p>The check moves to before the payment. A pre-execution control is not
+better in general, and the next paragraph but one says where it is
+worse. It is the only control whose output can still change what
+happens.</p>
+<p>A refusal has a cost that has to be counted. Refusing a legitimate
+payment on an irreversible rail means the principal does not get what
+they wanted, and there is no dispute process to fix it later. That works
+against the instinct to refuse whenever in doubt. It is why the
+benchmark in §6 should treat over-refusal as a defect, and why §10
+reports that our own instrument cannot measure it.</p>
+<p>The early check pays for being early. It decides on less information
+than a later one would have. It cannot see whether the goods arrived,
+whether the counterparty later turned out to be a fraud, or whether the
+same pattern repeated across a hundred other principals. Systems that
+monitor after the fact can see all of that. We do not claim the early
+control is more accurate. We claim it is the only one that can still
+change the outcome, which makes the loss of accuracy a forced trade.</p>
 <hr />
-<h2 id="3--related-work-and-what-each-survey-removed">3 · Related work,
-and what each survey removed</h2>
-<p>This section is longer than the contribution it supports. That
-ordering is deliberate: three surveys removed three claims, and the
-credibility of what is left rests on showing the removals rather than
-the survivors.</p>
-<h3 id="31-contemporary-pre-action-authorization">3.1 Contemporary
-pre-action authorization</h3>
-<p><strong>OAP</strong> [1] is the closest work. It is deterministic
-(<em>&quot;Same inputs, same decision. No sampling, no temperature&quot;</em>),
-bypass-resistant by running at the framework layer rather than in the
-model&#39;s reasoning, fail-closed, and auditable — every decision produces
-a signed, timestamped record. Denials carry a structured reason code
-such as <code>oap.limit_exceeded</code> or
-<code>oap.merchant_forbidden</code>, plus a human-readable explanation.
-It was evaluated against <strong>4,437 adversarial decisions across
-1,151 attack sessions</strong> in a live capture-the-flag against a
-banking agent, with external participants.</p>
-<p><strong>That last figure is better than anything we report</strong>,
-on the axis we identify in §9 as our weakest: our attacks were written
-by the author of the system under test, and OAP&#39;s were not.</p>
-<p>OAP&#39;s own limitations record that it does not formalise a delegation
-model (<em>&quot;planned for v1.1&quot;</em>), that its <code>ESCALATE</code> path
-is specified but unimplemented in the reference, and that attack
-sequence-based structuring is future work.</p>
-<p><strong>PCAS</strong> [2] is the strongest academic work in this
-space and the closest to ours in ambition, though not in subject. Its
-system, FORGE, models an agentic execution as a <strong>dependency graph
-of causal relationships</strong> between messages, tool calls and tool
-results, rather than as a linear history — because policies whose
-satisfaction depends on information flow cannot be expressed over a
-transcript. Policies are Datalog-derived rules accounting for transitive
-flow and cross-agent provenance; a reference monitor intercepts every
-action and blocks violations before execution. It reports policy
-compliance rising from 48% to 93% across frontier models on a
-customer-service benchmark, with case studies in prompt-injection
-defence, multi-agent approval workflows, and organisational policy.</p>
-<p>Two distinctions matter for what follows, and both required reading
-the paper rather than OAP&#39;s description of it.</p>
-<p><strong>PCAS attributes events to entities, not decisions to
-controls.</strong> It defines a principal function mapping each event to
-its producing entity, which answers <em>who acted</em>. Our claim
-concerns <em>which control decided</em>, and the paper contains no
-occurrence of the question in that sense. <strong>This is a third
-independent system placing a deterministic decision before an action
-without requiring the record to name the control that produced
-it</strong>, which is the strongest support claim 1 has.</p>
-<p><strong>Its subject is information flow; ours is money.</strong>
-FORGE governs any tool call and reasons about what an action depends on.
-It has no notion of an envelope, of integer minor units, of settlement,
-or of an irreversible rail. Payments appear in its evaluation only as
-domain content in a retail benchmark — tracking which payment method an
-order used — rather than as a governed economic quantity. Neither system
-subsumes the other, and saying so plainly is more useful than claiming
-adjacency. <strong>PayBench</strong> [Plunkett 2026] benchmarks agent
-behaviour under three control conditions — no policy, prompt-based
-policy, hard tool constraints — using matched trap/lookalike pairs so
-that blanket refusal cannot score well. <strong>EcoAgent-Bench</strong>
-scores agents&#39; economic decision <em>quality</em> under budget
-constraints rather than enforcement. <strong>Faramesh</strong> is an
-execution-time control plane; <strong>ToolMisuseBench</strong> is an
-offline deterministic harness isolating failure origin between call
-construction, policy handling and recovery.</p>
-<h3 id="32-policy-languages-and-authorization">3.2 Policy languages and
-authorization</h3>
-<p><strong>XACML 3.0</strong> responses <strong>may</strong> carry a
-<code>PolicyIdentifierList</code>, so <em>&quot;which policy decided&quot;</em>
-has been expressible in a 2003-lineage standard for two decades.
-<strong>OPA</strong> and <strong>Cedar</strong> are the modern
-expression of policy-as-data. Our claim is therefore not that
-attribution is inexpressible or unprecedented; §3.5 states what
-remains.</p>
-<h3 id="33-capability-based-security--and-the-claim-it-removed">3.3
-Capability-based security — and the claim it removed</h3>
-<p><strong>SPKI/SDSI</strong> (1996) provides authorization certificates
-that delegate, and a reduction algorithm computing effective authority
-through a certificate chain. <strong>Macaroons</strong> (2014) provide
-caveat attenuation. The <strong>object-capability</strong> model
-provides attenuating proxies and the <strong>membrane</strong> pattern
-for transitive attenuation. Intent-Driven Computing [3] proves that
-<em>&quot;capabilities can only narrow, never widen, through
-composition&quot;</em> with a mechanised Coq proof.</p>
+<h2 id="3--who-else-is-building-this-and-what-their-work-took-from-ours">3 ·
+Who else is building this, and what their work took from ours</h2>
+<p>This section is longer than the claims it supports, because the
+claims rest on what the surveys removed.</p>
+<h3 id="31-pre-action-authorization-in-2026">3.1 Pre-action
+authorization in 2026</h3>
+<p>OAP [1] is the closest work. It is deterministic (<em>&quot;Same inputs,
+same decision. No sampling, no temperature&quot;</em>), runs at the framework
+layer so the model&#39;s reasoning cannot route around it, fails closed, and
+signs and timestamps a record for every decision. A denial carries a
+structured reason code such as <code>oap.limit_exceeded</code> or
+<code>oap.merchant_forbidden</code>, with a readable explanation. It was
+tested against 4,437 adversarial decisions across 1,151 attack sessions
+in a live capture-the-flag against a banking agent, with outside
+participants.</p>
+<p>That last number beats anything we report, on the axis §10 names as
+our weakest. Our attacks were written by the author of the system under
+test, and OAP&#39;s were not.</p>
+<p>OAP&#39;s limitations section records that it does not yet formalise a
+delegation model (<em>&quot;planned for v1.1&quot;</em>), that its
+<code>ESCALATE</code> path is specified but not implemented in the
+reference, and that structuring across a sequence of actions is future
+work.</p>
+<p>PCAS [2] is the strongest academic work in this space. Its system,
+FORGE, models an agent&#39;s run as a dependency graph of causal links
+between messages, tool calls and tool results, because policies about
+information flow cannot be expressed over a flat transcript. Policies
+are Datalog-derived rules over transitive flow and cross-agent
+provenance, and a reference monitor blocks violations before they run.
+It reports compliance rising from 48% to 93% across frontier models on a
+customer-service benchmark.</p>
+<p>Reading the PCAS paper itself, rather than OAP&#39;s description of it,
+changed two of our conclusions.</p>
+<p>PCAS attributes events to entities. Its principal function maps each
+event to the entity that produced it, which answers <em>who acted</em>.
+Our claim is about <em>which control decided</em>, and the paper never
+asks that question. So PCAS is a third independent system that puts a
+deterministic decision before an action without requiring the record to
+name the control behind it, and it is the strongest support claim 1
+has.</p>
+<p>PCAS governs information flow, and we govern money. FORGE has no
+envelopes, no integer minor units, no settlement and no irreversible
+rail. Payments appear in its evaluation only as content in a retail
+benchmark. Neither system covers the other.</p>
+<p>PayBench [4] benchmarks agent behaviour under three conditions (no
+policy, a policy in the prompt, hard tool constraints) using matched
+trap and lookalike pairs, so that an agent that refuses everything
+cannot score well. EcoAgent-Bench scores the quality of agents&#39; economic
+decisions under budget constraints rather than enforcement. Faramesh is
+an execution-time control plane. ToolMisuseBench is an offline harness
+that separates failures in building a call from failures in handling
+policy and recovering.</p>
+<h3 id="32-policy-languages">3.2 Policy languages</h3>
+<p>An XACML 3.0 response may carry a <code>PolicyIdentifierList</code>
+[12], so &quot;which policy decided&quot; has been expressible in a standard from
+that lineage for twenty years. OPA and Cedar are the current form of
+policy as data. Our claim is therefore not that attribution was
+impossible to express. §3.5 says what is left.</p>
+<h3 id="33-capability-security-and-the-claim-it-removed">3.3 Capability
+security, and the claim it removed</h3>
+<p>SPKI/SDSI [10] reduces a chain of delegation certificates to one
+effective authority by intersecting what each step allows. Macaroons [9]
+attenuate a credential by adding caveats that can only restrict it. The
+object-capability model has attenuating proxies and membranes.
+Intent-Driven Computing [3] proves in Coq that <em>&quot;capabilities can
+only narrow, never widen, through composition&quot;</em>.</p>
 <p>An earlier version of this paper claimed a narrowing-only delegation
-clamp as a contribution, on the basis that OAP lists delegation chains
-as unformalised. <strong>That was true about OAP and wrong about the
-field, and the claim is withdrawn.</strong> Narrowing-only delegated
-authority is a thirty-year-old standard with a machine-checked
-proof.</p>
-<p>What the surveyed work computes or proves is the <em>result</em> of
-attenuation. None of it names <strong>the step that produced the
-result</strong> — and that is an attribution property, not a delegation
-one, so it appears in claim 1 and is not counted separately.</p>
-<h3 id="34-transparency-logs--and-the-claim-they-shrank">3.4
-Transparency logs — and the claim they shrank</h3>
-<p><strong>Certificate Transparency</strong> commits a log to a signed
-tree head, which is exactly a <code>(length, head)</code> pair over an
-append-only structure. Our evidence anchoring is that mechanism applied
-to a spend journal. The survey that established this
-<strong>refuted</strong> the novelty we had claimed for it; the clause
-survives as engineering, not as contribution.</p>
-<h3 id="35-what-is-left-after-all-of-it">3.5 What is left after all of
-it</h3>
-<p>Every surveyed system that attributes at all attributes a
-<strong>refusal</strong>. OAP&#39;s reason codes attach to
-<code>DENY</code>. XACML permits a policy identifier in a response but
-requires nothing. None of the surveyed work:</p>
-<ul>
-<li>requires the record to name the control that
-<strong>permitted</strong> an action;</li>
-<li>defines <strong>precedence</strong> when several controls would each
-have refused, so that the reported control is determined rather than
-incidental;</li>
-<li>makes the presence of attribution <strong>independently
-scoreable</strong> by a third party holding only machine-readable
-vectors and no access to the implementation;</li>
-<li>states the <strong>order asymmetry</strong> — that the verdict is
-order-independent while the attribution is not, so requiring attribution
-forces a normative evaluation order.</li>
-</ul>
-<p>Those four are claim 1.</p>
-<h3 id="36-adjacent-work-not-surveyed">3.6 Adjacent work not
-surveyed</h3>
+clamp as a contribution, because OAP lists delegation as unformalised.
+That was true of OAP and false of the field, and we withdrew the claim.
+Delegated authority that can only narrow is a thirty-year-old idea with
+a machine-checked proof.</p>
+<p>All of that work computes or proves the result of attenuation. None
+of it names the step that produced the result. That is an attribution
+question, so it lives inside claim 1.</p>
+<h3 id="34-transparency-logs-and-the-claim-they-shrank">3.4 Transparency
+logs, and the claim they shrank</h3>
+<p>Certificate Transparency commits a log to a signed tree head, which
+signs the tree&#39;s size and its root hash [11]. Our evidence anchoring is
+that mechanism applied to a spending journal. The survey that showed
+this refuted the novelty we had claimed, and the clause survives as
+engineering.</p>
+<h3 id="35-what-survives">3.5 What survives</h3>
+<p>Every surveyed system that attributes at all attributes a refusal.
+OAP&#39;s reason codes attach to <code>DENY</code>, and XACML allows a
+policy identifier without requiring one.</p>
+<table>
+<thead>
+<tr>
+<th>What the record must do</th>
+<th>OAP [1]</th>
+<th>PCAS [2]</th>
+<th>XACML [12]</th>
+<th>Card authorization</th>
+<th>This paper</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Name the control behind a refusal</td>
+<td>reason code on <code>DENY</code></td>
+<td>not asked</td>
+<td>optional</td>
+<td>decline code</td>
+<td>required</td>
+</tr>
+<tr>
+<td>Name the control behind an approval</td>
+<td>no</td>
+<td>no</td>
+<td>optional</td>
+<td>no</td>
+<td>required</td>
+</tr>
+<tr>
+<td>Fix which control is named when several refuse</td>
+<td>no</td>
+<td>no</td>
+<td>no</td>
+<td>issuer&#39;s choice</td>
+<td>required</td>
+</tr>
+<tr>
+<td>Be scorable by a third party from vectors alone</td>
+<td>no</td>
+<td>no</td>
+<td>no</td>
+<td>no</td>
+<td>required</td>
+</tr>
+<tr>
+<td>State that attribution depends on order</td>
+<td>no</td>
+<td>no</td>
+<td>no</td>
+<td>no</td>
+<td>§5</td>
+</tr>
+</tbody>
+</table>
+<p><em>Table 1. What surveyed systems require of the decision record, as
+read from their published material; the card column follows the
+description of ISO 8583 in §4 and is not separately cited. &quot;No&quot; means we
+found no such requirement, which is weaker than finding it absent by
+design.</em></p>
+<p>Those four requirements, plus the order argument behind them, are
+claim 1.</p>
+<h3 id="36-what-we-did-not-survey">3.6 What we did not survey</h3>
 <p>Transaction monitoring and AML systems, cloud and FinOps quota
 systems, NIST AI RMF and EU AI Act traceability, and agent governance
-frameworks beyond Microsoft&#39;s Agent Governance Toolkit remain
-<strong>unsurveyed at the time of writing</strong>. We do not believe
-they touch the three surviving claims. We believed the same about
-capability-based security on the morning of the day it removed one.</p>
+frameworks other than Microsoft&#39;s Agent Governance Toolkit. We do not
+think they touch the three remaining claims. We thought the same about
+capability security on the morning of the day it removed one.</p>
 <hr />
-<h2 id="4--definition">4 · Definition</h2>
+<h2 id="4--what-counts-as-a-governance-layer-card-networks-included">4 ·
+What counts as a governance layer (card networks included)</h2>
 <blockquote>
 <p>An <strong>autonomous economic governance layer</strong> renders a
-deterministic, attributable verdict on a proposed economic action
-<strong>before that action is executed</strong>, and emits evidence
-sufficient to reconstruct which control produced the verdict.</p>
+deterministic, attributable verdict on a proposed economic action before
+that action is executed, and emits evidence sufficient to reconstruct
+which control produced the verdict.</p>
 </blockquote>
-<p>Four elements, each doing work.</p>
-<p><strong>Deterministic.</strong> Same inputs, same verdict, replayable
-from the record. This excludes a model sampling at temperature above
-zero from the decision path. It does not exclude a model from the
-system: an advisory component may <em>narrow</em> a verdict and may
-never widen one, which keeps the decision reproducible while allowing
-judgement to make it stricter.</p>
-<p><strong>Attributable.</strong> The record names the control that
-produced the verdict. This is the property the paper argues should be
-required, and §5 is about what it costs.</p>
-<p><strong>Before execution.</strong> The verdict is rendered while
-refusal is still free. After execution a control can only describe.</p>
-<p><strong>Evidence sufficient to reconstruct.</strong> Not a log line
-asserting a conclusion, but enough state to re-derive it — the inputs,
-the policy identity, and the control that decided.</p>
-<h3 id="the-definition-deliberately-includes-card-authorization">The
-definition deliberately includes card authorization</h3>
-<p>A card authorization system satisfies every element. It decides
-before the money moves, it decides deterministically from rules the
-issuer set, it returns a reason code, and it keeps a record. <strong>ISO
-8583 has carried a decline-reason field since the 1980s.</strong></p>
-<p>We consider this a feature of the definition rather than a flaw in
-it. A definition of <em>governance layer</em> that excluded the most
-widely deployed governance layer in the world would be a definition
-built to make its author&#39;s system look novel. <strong>The interesting
-question is not whether card authorization qualifies — it does — but
-what changes when the payer is software acting under authority conferred
-earlier, on a rail with no chargeback, at a rate no cardholder
-generates.</strong></p>
-<p>That framing also supplies the strongest objection to claim 1, from
-the same source. Card networks deliberately <strong>do not</strong> tell
-the cardholder which rule declined them, because a declined fraudster
-who learns the rule can work around it. Attribution is a genuine
-security cost, not a free good.</p>
-<p>Our answer is narrow and depends on who reads the record: <strong>in
-this setting the reader is the operator who wrote the policy.</strong> A
-principal reading their own agent&#39;s refusal is not an adversary probing
-an issuer&#39;s fraud model; they are the party who set the limit and now
-need to know which limit bound. Where a record is disclosed to a
-counterparty, that is a different audience and the projection is
-different — the layer described here discloses a strict subset to a
-seller and never includes which control decided.</p>
-<h2 id="5--attribution-and-the-order-it-forces">5 · Attribution, and the
-order it forces</h2>
-<p>This is the paper&#39;s principal claim, and it can be stated as a single
-observation about narrowing systems.</p>
-<h3 id="51-the-verdict-is-order-independent-the-attribution-is-not">5.1
-The verdict is order-independent; the attribution is not</h3>
-<p>Take a layer whose controls may only <em>narrow</em> a standing
-verdict — each control may make the outcome stricter and may never make
-it more permissive. Order the verdicts by severity:
+<p>Each part of the definition excludes something.</p>
+<p><em>Deterministic</em> means the same inputs give the same verdict,
+and the verdict can be replayed from the record. A model sampling at a
+temperature above zero cannot sit in the decision path. A model can
+still sit in the system as an adviser that may tighten a verdict and may
+never loosen one, which keeps the decision reproducible while letting
+judgement make it stricter.</p>
+<p><em>Attributable</em> means the record names the control that
+produced the verdict. §5 works out what that costs.</p>
+<p><em>Before execution</em> means the verdict arrives while refusing is
+still free. Afterwards a control can only describe.</p>
+<p><em>Evidence sufficient to reconstruct</em> means enough state to
+derive the conclusion again: the inputs, the identity of the policy, and
+the control that decided. A log line that asserts a conclusion is not
+enough.</p>
+<h3 id="card-authorization-qualifies-and-that-is-deliberate">Card
+authorization qualifies, and that is deliberate</h3>
+<p>A card authorization system meets every part of the definition. It
+decides before the money moves, it decides from rules the issuer set, it
+returns a reason code, and it keeps a record. ISO 8583 has carried a
+decline-reason field since the 1980s.</p>
+<p>A definition of a governance layer that excluded the most widely
+deployed governance layer in the world would exist to make its author&#39;s
+system look new. The useful question is what changes when the payer is
+software acting on authority granted earlier, on a rail with no
+chargeback, at a rate no cardholder generates.</p>
+<p>Card networks also supply the strongest objection to claim 1. They
+deliberately do not tell the cardholder which rule declined them,
+because a fraudster who learns the rule can work around it. Attribution
+has a real security cost.</p>
+<p>Our answer depends on who reads the record. Here the reader is the
+operator who wrote the policy. A principal reading their own agent&#39;s
+refusal is not probing an issuer&#39;s fraud model; they set the limit and
+need to know which limit bound. A record shown to a counterparty is a
+different audience. The layer described here shows a seller a strict
+subset of the record, and that subset never says which control
+decided.</p>
+<hr />
+<h2 id="5--same-verdict-different-culprit">5 · Same verdict, different
+culprit</h2>
+<p>This is the paper&#39;s main claim, and it comes down to one observation
+about systems whose controls can only tighten a verdict.</p>
+<h3 id="51-order-does-not-change-the-verdict-it-changes-the-record">5.1
+Order does not change the verdict. It changes the record.</h3>
+<p>Take a layer in which each control may make the standing verdict
+stricter and never more permissive. Rank the verdicts by severity:
 <code>APPROVE</code>, <code>REVIEW</code>, <code>ESCALATE</code>,
 <code>REJECT</code>.</p>
-<p>Under narrowing-only composition the final verdict is the
-<strong>maximum severity any control proposed</strong>. Maximum is
-commutative and associative, so <strong>the final verdict does not
-depend on the order the controls ran in.</strong> This is a pleasant
-property and every system in §3 has some version of it.</p>
-<p>Now ask a different question: <em>which control decided?</em></p>
-<p>Define the attributed control as <strong>the last control that
-narrowed</strong> — well defined because widening is impossible, so a
-control proposing something no stricter than the running verdict changes
-nothing.</p>
-<p>There is an exact condition for when that answer depends on order,
-and it is narrower than we first claimed. Once the running verdict
-reaches the maximum, no later control can narrow. So the last narrower
-is the <strong>first control in the order attaining the maximum
-severity</strong>, and therefore:</p>
+<p>The final verdict is then the most severe one any control proposed.
+Taking a maximum is commutative and associative, so the final verdict
+does not depend on the order the controls ran in. Every system in §3 has
+some version of this property.</p>
+<p>Now ask which control decided. Define the attributed control as the
+last control that tightened the verdict. This is well defined because
+loosening is impossible, so a control proposing something no stricter
+than the current verdict changes nothing.</p>
+<p>Once the running verdict reaches the maximum, nothing after it can
+tighten it. So the last control to tighten is the first control in the
+order to reach the maximum, and:</p>
 <blockquote>
-<p><strong>Attribution depends on evaluation order if and only if more
-than one control proposes the maximum.</strong></p>
+<p>Attribution depends on evaluation order if and only if more than one
+control proposes the maximum.</p>
 </blockquote>
 <p>An earlier draft of this paper, following the specification&#39;s own
-rationale, illustrated order-dependence with a treasury envelope
-narrowing to <code>REVIEW</code> and a risk score then narrowing to
-<code>ESCALATE</code>. <strong>That example is wrong.</strong>
-<code>ESCALATE</code> is attained only by risk, so risk is attributed
-under both orders; the example shows the verdict is order-independent
-and shows nothing about attribution. Formalising the lattice caught it,
-and both the specification and this section are corrected.</p>
-<p>A witness needs a tie. A sanctioned counterparty whose payment a
-spending limit also refuses: both propose <code>REJECT</code>, and
-whichever runs first is the sole narrower and takes the attribution.</p>
-<p><strong>Ties are the common case, not a corner.</strong> Any two
-categorical refusals collide at the maximum by construction — barred
-counterparty, exhausted budget, revoked identity all produce
-<code>REJECT</code>.</p>
-<p><strong>So the moment a specification requires attribution, it has
-acquired an obligation the verdict never imposed: it must say something
-normative about evaluation order.</strong> It cannot know in advance
-whether a given decision has a tie at the top, so it must fix the order
-for all of them. Not because order changes what happens, but because
-order changes what the record says about what happened.</p>
-<p>That is the asymmetry. It is why attribution is not a free addition
-to a narrowing system, and it is why, we suspect, no surveyed system
-requires it: the verdict is the part that matters operationally, the
-verdict is order-free, and it is easy to conclude that order therefore
-does not need specifying.</p>
-<h3 id="52-the-last-control-that-narrowed-is-well-defined-and-insufficient">5.2
-&quot;The last control that narrowed&quot; is well defined, and insufficient</h3>
-<p>The default attribution rule is <em>the last control that narrowed
-the verdict</em>, and it is well defined precisely because widening is
-impossible. A control proposing something no stricter than the standing
-verdict changes nothing, so it did not narrow. The final narrowing is
-therefore unique.</p>
-<p><strong>The rule is a good default and it fails on a case that
-matters.</strong> Consider a sanctioned counterparty whose payment a
-spending limit also refuses. The limit narrowed. The sanctions screening
-did not — the verdict was already <code>REJECT</code> when it ran. Under
-the default rule the record attributes the refusal to the
-<strong>budget</strong>.</p>
-<p>That record says an agent was stopped by a spending limit. The truth
-is that it tried to pay a sanctioned party. An operator who responds by
-raising the limit finds the payment still refused, with nothing on the
-record explaining why.</p>
-<p><strong>Some findings are categorical rather than
-quantitative.</strong> A counterparty is barred or it is not, and that
-does not become less true because a second constraint happened to bite
-first. So a specification that requires attribution must also let an
-implementation declare certain controls <strong>dispositive</strong>:
-their finding determines attribution whenever it is <em>present</em>,
-whether or not it narrowed anything.</p>
-<p>The formalisation explains why this mechanism is forced rather than
-convenient. <strong>A total order on verdicts cannot distinguish two
-controls that both reach the maximum</strong> — the lattice has no
-structure left to break the tie with. Something outside it must, and a
-declared precedence among dispositive controls is that something. Where
-such a finding is present, attribution stops reading the evaluation
-order at all and is order-independent by construction.</p>
-<p>This clause exists because the earlier version was wrong and a
-conformance vector caught it. We report that rather than presenting the
-final rule as though it were the first one, because a specification
-whose errors are visible is easier to trust than one whose history is
-not.</p>
-<h3 id="53-declaration-is-what-stops-this-being-an-escape-hatch">5.3
-Declaration is what stops this being an escape hatch</h3>
-<p>An implementation free to nominate any control as dispositive after
-the fact can attribute a decision to whatever is convenient. Two
-requirements prevent that:</p>
-<ul>
-<li>the set of dispositive controls and <strong>their precedence
-relative to one another</strong> must be fixed in advance and in
-writing;</li>
-<li>the evaluation order must be <strong>documented</strong>, not fixed
-by the specification.</li>
-</ul>
-<p>The second is deliberate and slightly uncomfortable. A standard
-cannot impose a sequence, because it does not know which controls a
-given implementation has. But an implementation whose order is
-undocumented has an attribution nobody can predict, and therefore
-<strong>an attribution nobody can audit</strong> — which is the entire
-failure this section exists to prevent.</p>
-<p>There is a consequence worth naming: a dispositive control must
-record its finding <em>unconditionally</em>, because attribution now
-depends on the finding being present rather than on its having changed
-the outcome. A control that stays silent when it did not narrow cannot
-be dispositive.</p>
-<h3 id="54-attribution-on-permit-which-no-surveyed-system-requires">5.4
-Attribution on permit, which no surveyed system requires</h3>
-<p>Every system in §3 that attributes at all attributes a
-<strong>refusal</strong>. OAP&#39;s reason codes attach to
-<code>DENY</code>. This is the natural place to start: a refusal demands
-an explanation because somebody is inconvenienced by it.</p>
-<p><strong>A permit is the more interesting record.</strong> <em>&quot;This
-payment was approved, and the control that let it through was the budget
-envelope with $12.40 of headroom&quot;</em> answers a question a refusal
-record cannot: <strong>would deleting this control have changed anything
-observable?</strong> A layer whose controls all silently permit is
-indistinguishable from a layer with no controls at all, and the only way
-to tell them apart from the outside is to require the permit path to
-name its decider too.</p>
-<h3 id="55-the-property-this-buys-stated-as-a-test">5.5 The property
-this buys, stated as a test</h3>
-<p>The reason to require attribution rather than encourage it is that it
-converts an untestable assurance into a testable one.</p>
+rationale, illustrated order-dependence with a budget envelope
+tightening to <code>REVIEW</code> and a risk score then tightening to
+<code>ESCALATE</code>. That example is wrong. Only the risk score
+reaches <code>ESCALATE</code>, so risk is named under both orders.
+Formalising the lattice caught the mistake, and both the specification
+and this section are corrected [13].</p>
+<p>A real example needs a tie. Take a payment to a sanctioned
+counterparty that a spending limit also refuses. Both controls propose
+<code>REJECT</code>, and whichever runs first takes the attribution.</p>
+<figure>
+<img role="img" aria-label="Two evaluation orders of a budget envelope and a sanctions screen both reach REJECT, but the record names whichever control ran first." src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA3NjAgMzAwIiB3aWR0aD0iNzYwIiBoZWlnaHQ9IjMwMCIgcm9sZT0iaW1nIiBhcmlhLWxhYmVsbGVkYnk9ImZpZy1hdHRyaWJ1dGlvbi10aWUtdGl0bGUgZmlnLWF0dHJpYnV0aW9uLXRpZS1kZXNjIj4KPHRpdGxlIGlkPSJmaWctYXR0cmlidXRpb24tdGllLXRpdGxlIj5TYW1lIHZlcmRpY3QsIGRpZmZlcmVudCBhdHRyaWJ1dGVkIGNvbnRyb2w8L3RpdGxlPgo8ZGVzYyBpZD0iZmlnLWF0dHJpYnV0aW9uLXRpZS1kZXNjIj5Ud28gZXZhbHVhdGlvbiBvcmRlcnMgb2YgYSBidWRnZXQgZW52ZWxvcGUgYW5kIGEgc2FuY3Rpb25zIHNjcmVlbiBib3RoIHJlYWNoIFJFSkVDVCwgYnV0IHRoZSByZWNvcmQgYXR0cmlidXRlcyB0aGUgcmVmdXNhbCB0byB3aGljaGV2ZXIgY29udHJvbCByYW4gZmlyc3QuPC9kZXNjPgo8ZGVmcz4KPG1hcmtlciBpZD0iZmlnLWF0dHJpYnV0aW9uLXRpZS1hcnJvdyIgbWFya2VyV2lkdGg9IjgiIG1hcmtlckhlaWdodD0iNiIgcmVmWD0iNyIgcmVmWT0iMyIgb3JpZW50PSJhdXRvIj48cG9seWdvbiBwb2ludHM9IjAgMCwgOCAzLCAwIDYiIGZpbGw9IiM0ZjVkNzUiLz48L21hcmtlcj4KPG1hcmtlciBpZD0iZmlnLWF0dHJpYnV0aW9uLXRpZS1hcnJvdy1hY2NlbnQiIG1hcmtlcldpZHRoPSI4IiBtYXJrZXJIZWlnaHQ9IjYiIHJlZlg9IjciIHJlZlk9IjMiIG9yaWVudD0iYXV0byI+PHBvbHlnb24gcG9pbnRzPSIwIDAsIDggMywgMCA2IiBmaWxsPSIjYmY0NTIwIi8+PC9tYXJrZXI+CjwvZGVmcz4KPHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iI2ZmZmZmZiIvPgo8dGV4dCB4PSIzMCIgeT0iMjIiIGZpbGw9IiM0ZjVkNzUiIGZvbnQtc2l6ZT0iOCIgZm9udC1mYW1pbHk9IidDYXNjYWRpYSBNb25vJywgQ29uc29sYXMsIHVpLW1vbm9zcGFjZSwgTWVubG8sIG1vbm9zcGFjZSIgZm9udC13ZWlnaHQ9IjQwMCIgdGV4dC1hbmNob3I9InN0YXJ0IiBsZXR0ZXItc3BhY2luZz0iMC4xNGVtIj5UV08gQ09OVFJPTFMgQk9USCBSRUZVU0UuIE9SREVSIERFQ0lERVMgV0hJQ0ggT05FIFRIRSBSRUNPUkQgTkFNRVMuPC90ZXh0Pgo8dGV4dCB4PSI0MCIgeT0iNTIiIGZpbGw9IiM0ZjVkNzUiIGZvbnQtc2l6ZT0iOCIgZm9udC1mYW1pbHk9IidDYXNjYWRpYSBNb25vJywgQ29uc29sYXMsIHVpLW1vbm9zcGFjZSwgTWVubG8sIG1vbm9zcGFjZSIgZm9udC13ZWlnaHQ9IjQwMCIgdGV4dC1hbmNob3I9InN0YXJ0IiBsZXR0ZXItc3BhY2luZz0iMC4xMmVtIj5PUkRFUiBBOiBCVURHRVQgUlVOUyBGSVJTVDwvdGV4dD4KPGxpbmUgeDE9IjIwMCIgeTE9IjkyIiB4Mj0iMjU0IiB5Mj0iOTIiIHN0cm9rZT0iIzRmNWQ3NSIgc3Ryb2tlLXdpZHRoPSIxLjIiIG1hcmtlci1lbmQ9InVybCgjZmlnLWF0dHJpYnV0aW9uLXRpZS1hcnJvdykiLz4KPGxpbmUgeDE9IjQyMCIgeTE9IjkyIiB4Mj0iNDc0IiB5Mj0iOTIiIHN0cm9rZT0iIzRmNWQ3NSIgc3Ryb2tlLXdpZHRoPSIxLjIiIG1hcmtlci1lbmQ9InVybCgjZmlnLWF0dHJpYnV0aW9uLXRpZS1hcnJvdykiLz4KPHJlY3QgeD0iNDAiIHk9IjY0IiB3aWR0aD0iMTYwIiBoZWlnaHQ9IjU2IiByeD0iNiIgZmlsbD0iI2ZmZmZmZiIvPgo8cmVjdCB4PSI0MCIgeT0iNjQiIHdpZHRoPSIxNjAiIGhlaWdodD0iNTYiIHJ4PSI2IiBmaWxsPSIjZmZmZmZmIiBzdHJva2U9IiMxZjI0MzAiIHN0cm9rZS13aWR0aD0iMSIvPgo8dGV4dCB4PSIxMjAuMCIgeT0iOTAuMCIgZmlsbD0iIzFmMjQzMCIgZm9udC1zaXplPSIxMiIgZm9udC1mYW1pbHk9IidTZWdvZSBVSScsIHN5c3RlbS11aSwgLWFwcGxlLXN5c3RlbSwgSGVsdmV0aWNhLCBBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC13ZWlnaHQ9IjYwMCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+QnVkZ2V0IGVudmVsb3BlPC90ZXh0Pgo8dGV4dCB4PSIxMjAuMCIgeT0iMTA2LjAiIGZpbGw9IiM0ZjVkNzUiIGZvbnQtc2l6ZT0iOSIgZm9udC1mYW1pbHk9IidDYXNjYWRpYSBNb25vJywgQ29uc29sYXMsIHVpLW1vbm9zcGFjZSwgTWVubG8sIG1vbm9zcGFjZSIgZm9udC13ZWlnaHQ9IjQwMCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+UkVKRUNULCBuYXJyb3dzPC90ZXh0Pgo8cmVjdCB4PSIyNjAiIHk9IjY0IiB3aWR0aD0iMTYwIiBoZWlnaHQ9IjU2IiByeD0iNiIgZmlsbD0iI2ZmZmZmZiIvPgo8cmVjdCB4PSIyNjAiIHk9IjY0IiB3aWR0aD0iMTYwIiBoZWlnaHQ9IjU2IiByeD0iNiIgZmlsbD0iI2ZmZmZmZiIgc3Ryb2tlPSIjMWYyNDMwIiBzdHJva2Utd2lkdGg9IjEiLz4KPHRleHQgeD0iMzQwLjAiIHk9IjkwLjAiIGZpbGw9IiMxZjI0MzAiIGZvbnQtc2l6ZT0iMTIiIGZvbnQtZmFtaWx5PSInU2Vnb2UgVUknLCBzeXN0ZW0tdWksIC1hcHBsZS1zeXN0ZW0sIEhlbHZldGljYSwgQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI2MDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiPlNhbmN0aW9ucyBzY3JlZW48L3RleHQ+Cjx0ZXh0IHg9IjM0MC4wIiB5PSIxMDYuMCIgZmlsbD0iIzRmNWQ3NSIgZm9udC1zaXplPSI5IiBmb250LWZhbWlseT0iJ0Nhc2NhZGlhIE1vbm8nLCBDb25zb2xhcywgdWktbW9ub3NwYWNlLCBNZW5sbywgbW9ub3NwYWNlIiBmb250LXdlaWdodD0iNDAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5SRUpFQ1QsIG5vIGNoYW5nZTwvdGV4dD4KPHJlY3QgeD0iNDgwIiB5PSI2NCIgd2lkdGg9IjI0MCIgaGVpZ2h0PSI1NiIgcng9IjYiIGZpbGw9IiNmZmZmZmYiLz4KPHJlY3QgeD0iNDgwIiB5PSI2NCIgd2lkdGg9IjI0MCIgaGVpZ2h0PSI1NiIgcng9IjYiIGZpbGw9InJnYmEoMTkxLDY5LDMyLDAuMDgpIiBzdHJva2U9IiNiZjQ1MjAiIHN0cm9rZS13aWR0aD0iMSIvPgo8dGV4dCB4PSI2MDAuMCIgeT0iOTAuMCIgZmlsbD0iIzFmMjQzMCIgZm9udC1zaXplPSIxMiIgZm9udC1mYW1pbHk9IidTZWdvZSBVSScsIHN5c3RlbS11aSwgLWFwcGxlLXN5c3RlbSwgSGVsdmV0aWNhLCBBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC13ZWlnaHQ9IjYwMCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+VmVyZGljdDogUkVKRUNUPC90ZXh0Pgo8dGV4dCB4PSI2MDAuMCIgeT0iMTA2LjAiIGZpbGw9IiM0ZjVkNzUiIGZvbnQtc2l6ZT0iOSIgZm9udC1mYW1pbHk9IidDYXNjYWRpYSBNb25vJywgQ29uc29sYXMsIHVpLW1vbm9zcGFjZSwgTWVubG8sIG1vbm9zcGFjZSIgZm9udC13ZWlnaHQ9IjQwMCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+cmVjb3JkIG5hbWVzOiBidWRnZXQ8L3RleHQ+Cjx0ZXh0IHg9IjQwIiB5PSIxNjAiIGZpbGw9IiM0ZjVkNzUiIGZvbnQtc2l6ZT0iOCIgZm9udC1mYW1pbHk9IidDYXNjYWRpYSBNb25vJywgQ29uc29sYXMsIHVpLW1vbm9zcGFjZSwgTWVubG8sIG1vbm9zcGFjZSIgZm9udC13ZWlnaHQ9IjQwMCIgdGV4dC1hbmNob3I9InN0YXJ0IiBsZXR0ZXItc3BhY2luZz0iMC4xMmVtIj5PUkRFUiBCOiBTQU5DVElPTlMgUlVOUyBGSVJTVDwvdGV4dD4KPGxpbmUgeDE9IjIwMCIgeTE9IjIwMCIgeDI9IjI1NCIgeTI9IjIwMCIgc3Ryb2tlPSIjNGY1ZDc1IiBzdHJva2Utd2lkdGg9IjEuMiIgbWFya2VyLWVuZD0idXJsKCNmaWctYXR0cmlidXRpb24tdGllLWFycm93KSIvPgo8bGluZSB4MT0iNDIwIiB5MT0iMjAwIiB4Mj0iNDc0IiB5Mj0iMjAwIiBzdHJva2U9IiM0ZjVkNzUiIHN0cm9rZS13aWR0aD0iMS4yIiBtYXJrZXItZW5kPSJ1cmwoI2ZpZy1hdHRyaWJ1dGlvbi10aWUtYXJyb3cpIi8+CjxyZWN0IHg9IjQwIiB5PSIxNzIiIHdpZHRoPSIxNjAiIGhlaWdodD0iNTYiIHJ4PSI2IiBmaWxsPSIjZmZmZmZmIi8+CjxyZWN0IHg9IjQwIiB5PSIxNzIiIHdpZHRoPSIxNjAiIGhlaWdodD0iNTYiIHJ4PSI2IiBmaWxsPSIjZmZmZmZmIiBzdHJva2U9IiMxZjI0MzAiIHN0cm9rZS13aWR0aD0iMSIvPgo8dGV4dCB4PSIxMjAuMCIgeT0iMTk4LjAiIGZpbGw9IiMxZjI0MzAiIGZvbnQtc2l6ZT0iMTIiIGZvbnQtZmFtaWx5PSInU2Vnb2UgVUknLCBzeXN0ZW0tdWksIC1hcHBsZS1zeXN0ZW0sIEhlbHZldGljYSwgQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI2MDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiPlNhbmN0aW9ucyBzY3JlZW48L3RleHQ+Cjx0ZXh0IHg9IjEyMC4wIiB5PSIyMTQuMCIgZmlsbD0iIzRmNWQ3NSIgZm9udC1zaXplPSI5IiBmb250LWZhbWlseT0iJ0Nhc2NhZGlhIE1vbm8nLCBDb25zb2xhcywgdWktbW9ub3NwYWNlLCBNZW5sbywgbW9ub3NwYWNlIiBmb250LXdlaWdodD0iNDAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5SRUpFQ1QsIG5hcnJvd3M8L3RleHQ+CjxyZWN0IHg9IjI2MCIgeT0iMTcyIiB3aWR0aD0iMTYwIiBoZWlnaHQ9IjU2IiByeD0iNiIgZmlsbD0iI2ZmZmZmZiIvPgo8cmVjdCB4PSIyNjAiIHk9IjE3MiIgd2lkdGg9IjE2MCIgaGVpZ2h0PSI1NiIgcng9IjYiIGZpbGw9IiNmZmZmZmYiIHN0cm9rZT0iIzFmMjQzMCIgc3Ryb2tlLXdpZHRoPSIxIi8+Cjx0ZXh0IHg9IjM0MC4wIiB5PSIxOTguMCIgZmlsbD0iIzFmMjQzMCIgZm9udC1zaXplPSIxMiIgZm9udC1mYW1pbHk9IidTZWdvZSBVSScsIHN5c3RlbS11aSwgLWFwcGxlLXN5c3RlbSwgSGVsdmV0aWNhLCBBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC13ZWlnaHQ9IjYwMCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+QnVkZ2V0IGVudmVsb3BlPC90ZXh0Pgo8dGV4dCB4PSIzNDAuMCIgeT0iMjE0LjAiIGZpbGw9IiM0ZjVkNzUiIGZvbnQtc2l6ZT0iOSIgZm9udC1mYW1pbHk9IidDYXNjYWRpYSBNb25vJywgQ29uc29sYXMsIHVpLW1vbm9zcGFjZSwgTWVubG8sIG1vbm9zcGFjZSIgZm9udC13ZWlnaHQ9IjQwMCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+UkVKRUNULCBubyBjaGFuZ2U8L3RleHQ+CjxyZWN0IHg9IjQ4MCIgeT0iMTcyIiB3aWR0aD0iMjQwIiBoZWlnaHQ9IjU2IiByeD0iNiIgZmlsbD0iI2ZmZmZmZiIvPgo8cmVjdCB4PSI0ODAiIHk9IjE3MiIgd2lkdGg9IjI0MCIgaGVpZ2h0PSI1NiIgcng9IjYiIGZpbGw9InJnYmEoMTkxLDY5LDMyLDAuMDgpIiBzdHJva2U9IiNiZjQ1MjAiIHN0cm9rZS13aWR0aD0iMSIvPgo8dGV4dCB4PSI2MDAuMCIgeT0iMTk4LjAiIGZpbGw9IiMxZjI0MzAiIGZvbnQtc2l6ZT0iMTIiIGZvbnQtZmFtaWx5PSInU2Vnb2UgVUknLCBzeXN0ZW0tdWksIC1hcHBsZS1zeXN0ZW0sIEhlbHZldGljYSwgQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI2MDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiPlZlcmRpY3Q6IFJFSkVDVDwvdGV4dD4KPHRleHQgeD0iNjAwLjAiIHk9IjIxNC4wIiBmaWxsPSIjNGY1ZDc1IiBmb250LXNpemU9IjkiIGZvbnQtZmFtaWx5PSInQ2FzY2FkaWEgTW9ubycsIENvbnNvbGFzLCB1aS1tb25vc3BhY2UsIE1lbmxvLCBtb25vc3BhY2UiIGZvbnQtd2VpZ2h0PSI0MDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiPnJlY29yZCBuYW1lczogc2FuY3Rpb25zPC90ZXh0Pgo8dGV4dCB4PSIzODAiIHk9IjI3MiIgZmlsbD0iIzFmMjQzMCIgZm9udC1zaXplPSIxMyIgZm9udC1mYW1pbHk9IkNoYXJ0ZXIsICdCaXRzdHJlYW0gQ2hhcnRlcicsIEdlb3JnaWEsIENhbWJyaWEsIHNlcmlmIiBmb250LXdlaWdodD0iNDAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXN0eWxlPSJpdGFsaWMiPlNhbWUgdmVyZGljdCBib3RoIHdheXM7IGEgZGlmZmVyZW50IGNvbnRyb2wgb24gdGhlIHJlY29yZC4gQSBkZWNsYXJlZCBkaXNwb3NpdGl2ZSBjb250cm9sIChzYW5jdGlvbnMpIHJlbW92ZXMgdGhlIGFtYmlndWl0eS48L3RleHQ+Cjwvc3ZnPgo=" alt="Two evaluation orders of a budget envelope and a sanctions screen both reach REJECT, but the record names whichever control ran first.">
+<figcaption>Figure 1. The verdict is the same in both orders. The control named on the record is not.</figcaption>
+</figure>
+
+<p>Ties are the normal case. Any two outright refusals meet at the
+maximum: a barred counterparty, an exhausted budget and a revoked
+identity all produce <code>REJECT</code>.</p>
+<p>So the moment a specification requires attribution, it takes on an
+obligation the verdict never imposed: it has to say something binding
+about evaluation order. It cannot know in advance whether a given
+decision will have a tie at the top, so it has to fix the order for
+every decision. Order does not change what happens. It changes what the
+record says happened.</p>
+<p>We suspect this asymmetry is why no surveyed system requires
+attribution. The verdict is the part that matters operationally, the
+verdict does not care about order, and it is easy to conclude from that
+that order does not need specifying.</p>
+<h3 id="52-the-last-control-that-tightened-is-a-good-default-with-one-bad-failure">5.2
+&quot;The last control that tightened&quot; is a good default with one bad
+failure</h3>
+<p>In the sanctions example, under the default rule the budget tightened
+the verdict first and the sanctions screen changed nothing, because the
+verdict was already <code>REJECT</code> when it ran. The record says the
+agent was stopped by a spending limit. In fact it tried to pay a
+sanctioned party. An operator who responds by raising the limit finds
+the payment still refused, with nothing on the record to explain
+why.</p>
+<p>Some findings are categorical. A counterparty is barred or it is not,
+and that stays true whether or not another constraint happened to bite
+first. A specification that requires attribution must therefore let an
+implementation declare certain controls <em>dispositive</em>: when their
+finding is present, they get the attribution whether or not they
+tightened anything.</p>
+<p>The formalisation shows why this mechanism is needed. A total order
+on verdicts cannot tell apart two controls that both reach the maximum,
+because the lattice has no structure left to break the tie. Something
+outside it has to, and a declared precedence among dispositive controls
+does. Where such a finding is present, attribution stops depending on
+evaluation order at all.</p>
+<p>This clause exists because the earlier rule was wrong and a
+conformance vector caught it.</p>
+<h3 id="53-declaring-in-advance-is-what-stops-this-being-an-escape-hatch">5.3
+Declaring in advance is what stops this being an escape hatch</h3>
+<p>If an implementation could nominate any control as dispositive after
+the fact, it could attribute a decision to whatever was convenient. Two
+requirements prevent that. The set of dispositive controls, and their
+precedence among themselves, is fixed in advance and in writing. And the
+evaluation order must be documented, though the specification does not
+choose it.</p>
+<p>The second requirement is a little uncomfortable. A standard cannot
+impose a sequence on controls it does not know about. But an
+implementation whose order is undocumented has an attribution nobody can
+predict, and so an attribution nobody can audit, which is the failure
+this section exists to prevent.</p>
+<p>One consequence: a dispositive control must record its finding every
+time, because attribution now depends on the finding being present
+rather than on its having changed the outcome. A control that stays
+silent when it did not tighten anything cannot be dispositive.</p>
+<h3 id="54-naming-the-control-behind-an-approval">5.4 Naming the control
+behind an approval</h3>
+<p>Every system in §3 that attributes at all attributes refusals, which
+is the natural place to start: somebody is inconvenienced and wants an
+explanation.</p>
+<p>The approval record is more useful. <em>&quot;This payment was approved,
+and the control that let it through was the budget envelope with $12.40
+of headroom&quot;</em> answers a question no refusal record can: would
+deleting this control have changed anything you can observe? A layer
+whose controls all approve in silence looks, from outside, exactly like
+a layer with no controls. The only way to tell them apart is to make the
+approval path name its decider too.</p>
+<h3 id="55-the-test-this-makes-possible">5.5 The test this makes
+possible</h3>
+<p>Requiring attribution turns an assurance nobody can test into one
+anybody can:</p>
 <blockquote>
-<p><strong>Delete a control. Does any record change?</strong></p>
+<p>Delete a control. Does any record change?</p>
 </blockquote>
-<p>If the answer is no, that control was decorative and its removal is
-invisible to every audit. This is checkable by a third party holding
-only the record format and a set of vectors — no access to the
-implementation, no cooperation from its author. That is what
-&quot;independently scored&quot; means here, and it is the part §3.5 identifies as
-unclaimed.</p>
+<p>If not, the control was decorative, and removing it would be
+invisible to every audit. A third party can run this check with only the
+record format and a set of vectors, without access to the implementation
+or help from its author. That is what &quot;independently scored&quot; means here,
+and it is the part §3.5 found unclaimed.</p>
 <hr />
-<h2 id="6--the-scoring-rule-and-the-instrument-under-it">6 · The scoring
-rule, and the instrument under it</h2>
-<h3 id="61-defended_by_accident">6.1
-<code>DEFENDED_BY_ACCIDENT</code></h3>
-<p>An adversarial benchmark of a <em>control layer</em> normally has two
-outcomes per attack: the attack succeeded, or it did not. We use four,
-and the third is the contribution:</p>
+<h2 id="6--counting-lucky-refusals-as-findings">6 · Counting lucky
+refusals as findings</h2>
+<h3 id="61-four-outcomes-instead-of-two">6.1 Four outcomes instead of
+two</h3>
+<p>An adversarial benchmark of a control layer usually records two
+outcomes per attack: it worked, or it did not. We record four, and the
+second is the contribution.</p>
 <table>
 <thead>
 <tr>
@@ -556,11 +543,11 @@ and the third is the contribution:</p>
 <tbody>
 <tr>
 <td><code>DEFENDED</code></td>
-<td>Refused, by the control the attack targets</td>
+<td>Refused by the control the attack targets</td>
 </tr>
 <tr>
 <td><code>DEFENDED_BY_ACCIDENT</code></td>
-<td>Refused, by a control that was not aiming at this attack</td>
+<td>Refused by a control that was not aimed at this attack</td>
 </tr>
 <tr>
 <td><code>UNDEFENDED</code></td>
@@ -568,159 +555,320 @@ and the third is the contribution:</p>
 </tr>
 <tr>
 <td><code>ERROR</code></td>
-<td>The attack did not execute</td>
+<td>The attack did not run</td>
 </tr>
 </tbody>
 </table>
-<p><strong><code>DEFENDED_BY_ACCIDENT</code> is scored as a finding, not
-as a pass</strong>, and the reason is that a coincidence has no
-maintenance contract. A trust-farming attack refused by a risk score
-that happened to fire is refused today and may not be refused after an
-unrelated weight is retuned. The record will not show a regression,
-because nothing that was ever asserted stopped being true.</p>
-<p>Requiring attribution (§5) is what makes this outcome
-<em>observable</em>. Without a record naming the control that refused,
-an accidental defence and an intentional one look identical from the
-outside — which is the practical argument for claim 1 restated as a
-measurement.</p>
-<p>No system surveyed in §3 has this outcome. OAP records a deny code
-but does not ask whether that code was the one aiming at the attack;
-PayBench scores whether a refusal was appropriate, not where it came
-from.</p>
-<p><strong>The most recent addition found a defect rather than
-confirming one.</strong> Two advisor-path attacks were added in August
-2026, assuming a counterparty&#39;s text fully compromises the advisory
-model. The first confirmed the clamp holds. The second — an advisor
-returning a string that is not one of the four verdicts — raised an
-unhandled exception out of the decision path, so the layer <em>failed
-closed by crashing</em>: no verdict, no attributed control, no record.
-<strong>A decision that never finishes has none of the four states to
-report</strong>, which is a failure mode the state vocabulary cannot
-express and the benchmark can.</p>
-<p><code>ERROR</code> is separated from the other three for a reason
-found the hard way: an attack with no handler silently reports nothing,
-and a suite full of errors looks like a clean run to anyone reading only
-a failure count. A test asserts every attack executed.</p>
-<h3 id="62-the-instrument-and-what-is-wrong-with-it">6.2 The instrument,
-and what is wrong with it</h3>
-<p>Twenty attacks across five classes — numeric, economic, evidence,
-authority, advisor. The current score is <strong>17 defended, 1 by
-accident, 2 undefended, 0 errors</strong>, recorded in a sealed
-experiment record with a checksum. A test compares a live run against
-that record and <strong>fails on any difference in either
-direction</strong>: a closed gap is as much a deliberate change as a
-regression, and both must be committed with the record updated.</p>
-<p>Three properties of the instrument we state here rather than in the
-limitations section, because a reader should not have to reach §9 to
-learn them:</p>
-<p><strong>It is smaller than the alternatives and it is not externally
-attacked.</strong> OAP&#39;s CTF produced 4,437 adversarial decisions across
-1,151 sessions with external participants. Ours has twenty attacks, all
-written by the author of the system under test. On the axis of
-independence, we are behind the work we are citing.</p>
-<p><strong>It has no benign twins.</strong> PayBench pairs each trap
-scenario with a lookalike that is safe to permit, so an agent that
-refuses everything cannot score well. <strong>We have no such
-pairing.</strong> An implementation that refused all twenty attacks
-would score 20/20 on our instrument, which means the instrument does not
-measure over-refusal at all — the failure mode §2 argues is expensive on
-an irreversible rail. This is a genuine defect and it was found by
-reading a competitor&#39;s design rather than by testing our own.</p>
-<p><strong>Two findings are open and stay open.</strong> Structuring is
-bounded rather than refused, for reasons given in §7. Journal truncation
-is closed only against an external anchor, and no anchor ships by
-default, so the benchmark reports the posture an installer actually gets
-rather than the one available to a careful operator.</p>
-<h3 id="63-the-lineage-including-a-wrong-measurement">6.3 The lineage,
-including a wrong measurement</h3>
-<p>The record chain behind the score is
-<code>EXP-008 → EXP-009 → EXP-010</code>. <code>EXP-009</code>
-<strong>supersedes</strong> <code>EXP-008</code> because a measurement
-in it was wrong: an attack was parameterised over a window its target
-control could not observe, so the result described the parameterisation
-rather than the control.</p>
-<p>The superseded record was not edited. It remains, marked superseded,
-with the reason attached.</p>
-<p>We include this because a record lineage containing a correction is
-better evidence about method than a clean one. A benchmark whose history
-shows no errors is either very carefully run or very carefully tidied,
-and a reader has no way to tell which.</p>
+<p>An accidental defence counts as a finding because a coincidence has
+no maintenance contract. A trust-farming attack refused by a
+return-on-investment rule that happened to fire is refused today, and
+may not be after somebody retunes an unrelated weight. Nothing in the
+record will show a regression, because nothing that was ever asserted
+stopped being true.</p>
+<p>Attribution (§5) is what makes this outcome visible. Without a record
+naming the control that refused, an accidental defence and a deliberate
+one look the same from outside.</p>
+<p>None of the systems in §3 has this outcome. OAP records a deny code
+but does not ask whether it was the code aimed at the attack. PayBench
+scores whether a refusal was appropriate, not where it came from.</p>
+<p>The newest attacks found a defect. Two advisor attacks were added in
+August 2026, both assuming a counterparty&#39;s text completely takes over
+the advisory model. The first confirmed the clamp holds. The second had
+the adviser return a string that is not one of the four verdicts, and
+that raised an unhandled exception out of the decision path. The layer
+failed closed by crashing: no verdict, no attributed control, no record.
+A decision that never finishes has none of the four states to report,
+which the state vocabulary cannot express and the benchmark can.</p>
+<p><code>ERROR</code> is kept separate for a reason learned the hard
+way. An attack with no handler silently reports nothing, and a suite
+full of errors looks like a clean run to anyone reading only a failure
+count. A test asserts that every attack executed.</p>
+<h3 id="62-the-instrument-including-what-is-wrong-with-it">6.2 The
+instrument, including what is wrong with it</h3>
+<p>Twenty attacks in five classes: numeric, economic, evidence,
+authority and advisor.</p>
+<figure>
+<img role="img" aria-label="Twenty attacks in five classes; seventeen defended by their target control, one refused by an unrelated control, and two open." src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA3NjAgMzMwIiB3aWR0aD0iNzYwIiBoZWlnaHQ9IjMzMCIgcm9sZT0iaW1nIiBhcmlhLWxhYmVsbGVkYnk9ImZpZy1iZW5jaG1hcmstdGl0bGUgZmlnLWJlbmNobWFyay1kZXNjIj4KPHRpdGxlIGlkPSJmaWctYmVuY2htYXJrLXRpdGxlIj5CZW5jaG1hcmsgb3V0Y29tZXMgYnkgYXR0YWNrIGNsYXNzPC90aXRsZT4KPGRlc2MgaWQ9ImZpZy1iZW5jaG1hcmstZGVzYyI+VHdlbnR5IGF0dGFja3MgaW4gZml2ZSBjbGFzc2VzOyBzZXZlbnRlZW4gYXJlIGRlZmVuZGVkIGJ5IHRoZWlyIHRhcmdldCBjb250cm9sLCBvbmUgdHJ1c3QtZmFybWluZyBhdHRhY2sgaXMgcmVmdXNlZCBieSBhbiB1bnJlbGF0ZWQgY29udHJvbCwgYW5kIHR3byByZW1haW4gb3Blbi48L2Rlc2M+CjxkZWZzPgo8bWFya2VyIGlkPSJmaWctYmVuY2htYXJrLWFycm93IiBtYXJrZXJXaWR0aD0iOCIgbWFya2VySGVpZ2h0PSI2IiByZWZYPSI3IiByZWZZPSIzIiBvcmllbnQ9ImF1dG8iPjxwb2x5Z29uIHBvaW50cz0iMCAwLCA4IDMsIDAgNiIgZmlsbD0iIzRmNWQ3NSIvPjwvbWFya2VyPgo8bWFya2VyIGlkPSJmaWctYmVuY2htYXJrLWFycm93LWFjY2VudCIgbWFya2VyV2lkdGg9IjgiIG1hcmtlckhlaWdodD0iNiIgcmVmWD0iNyIgcmVmWT0iMyIgb3JpZW50PSJhdXRvIj48cG9seWdvbiBwb2ludHM9IjAgMCwgOCAzLCAwIDYiIGZpbGw9IiNiZjQ1MjAiLz48L21hcmtlcj4KPC9kZWZzPgo8cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZmZmZmZmIi8+Cjx0ZXh0IHg9IjMwIiB5PSIyMiIgZmlsbD0iIzRmNWQ3NSIgZm9udC1zaXplPSI4IiBmb250LWZhbWlseT0iJ0Nhc2NhZGlhIE1vbm8nLCBDb25zb2xhcywgdWktbW9ub3NwYWNlLCBNZW5sbywgbW9ub3NwYWNlIiBmb250LXdlaWdodD0iNDAwIiB0ZXh0LWFuY2hvcj0ic3RhcnQiIGxldHRlci1zcGFjaW5nPSIwLjE0ZW0iPjIwIEFUVEFDS1MsIDUgQ0xBU1NFUzogMTcgREVGRU5ERUQsIDEgQlkgQUNDSURFTlQsIDIgT1BFTjwvdGV4dD4KPHRleHQgeD0iMTM2IiB5PSI2NCIgZmlsbD0iIzFmMjQzMCIgZm9udC1zaXplPSIxMiIgZm9udC1mYW1pbHk9IidTZWdvZSBVSScsIHN5c3RlbS11aSwgLWFwcGxlLXN5c3RlbSwgSGVsdmV0aWNhLCBBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC13ZWlnaHQ9IjYwMCIgdGV4dC1hbmNob3I9ImVuZCI+TnVtZXJpYzwvdGV4dD4KPHJlY3QgeD0iMTUwIiB5PSI0NCIgd2lkdGg9IjkyIiBoZWlnaHQ9IjI4IiByeD0iMyIgZmlsbD0icmdiYSg3OSw5MywxMTcsMC4zMCkiLz4KPHJlY3QgeD0iMjQ2IiB5PSI0NCIgd2lkdGg9IjkyIiBoZWlnaHQ9IjI4IiByeD0iMyIgZmlsbD0icmdiYSg3OSw5MywxMTcsMC4zMCkiLz4KPHJlY3QgeD0iMzQyIiB5PSI0NCIgd2lkdGg9IjkyIiBoZWlnaHQ9IjI4IiByeD0iMyIgZmlsbD0icmdiYSg3OSw5MywxMTcsMC4zMCkiLz4KPHJlY3QgeD0iNDM4IiB5PSI0NCIgd2lkdGg9IjkyIiBoZWlnaHQ9IjI4IiByeD0iMyIgZmlsbD0icmdiYSg3OSw5MywxMTcsMC4zMCkiLz4KPHJlY3QgeD0iNTM0IiB5PSI0NCIgd2lkdGg9IjkyIiBoZWlnaHQ9IjI4IiByeD0iMyIgZmlsbD0icmdiYSg3OSw5MywxMTcsMC4zMCkiLz4KPHRleHQgeD0iNjQyIiB5PSI2MiIgZmlsbD0iIzRmNWQ3NSIgZm9udC1zaXplPSI5IiBmb250LWZhbWlseT0iJ0Nhc2NhZGlhIE1vbm8nLCBDb25zb2xhcywgdWktbW9ub3NwYWNlLCBNZW5sbywgbW9ub3NwYWNlIiBmb250LXdlaWdodD0iNDAwIiB0ZXh0LWFuY2hvcj0ic3RhcnQiPjUvNTwvdGV4dD4KPHRleHQgeD0iMTM2IiB5PSIxMDgiIGZpbGw9IiMxZjI0MzAiIGZvbnQtc2l6ZT0iMTIiIGZvbnQtZmFtaWx5PSInU2Vnb2UgVUknLCBzeXN0ZW0tdWksIC1hcHBsZS1zeXN0ZW0sIEhlbHZldGljYSwgQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI2MDAiIHRleHQtYW5jaG9yPSJlbmQiPkVjb25vbWljPC90ZXh0Pgo8cmVjdCB4PSIxNTAuNSIgeT0iODguNSIgd2lkdGg9IjkxIiBoZWlnaHQ9IjI3IiByeD0iMyIgZmlsbD0iI2ZmZmZmZiIgc3Ryb2tlPSIjMWYyNDMwIiBzdHJva2Utd2lkdGg9IjEiIHN0cm9rZS1kYXNoYXJyYXk9IjQsMyIvPgo8dGV4dCB4PSIxOTYuMCIgeT0iMTA2IiBmaWxsPSIjMWYyNDMwIiBmb250LXNpemU9IjgiIGZvbnQtZmFtaWx5PSInQ2FzY2FkaWEgTW9ubycsIENvbnNvbGFzLCB1aS1tb25vc3BhY2UsIE1lbmxvLCBtb25vc3BhY2UiIGZvbnQtd2VpZ2h0PSI0MDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiPlJULUVDT04tMDAxPC90ZXh0Pgo8cmVjdCB4PSIyNDYiIHk9Ijg4IiB3aWR0aD0iOTIiIGhlaWdodD0iMjgiIHJ4PSIzIiBmaWxsPSJyZ2JhKDc5LDkzLDExNywwLjMwKSIvPgo8cmVjdCB4PSIzNDIiIHk9Ijg4IiB3aWR0aD0iOTIiIGhlaWdodD0iMjgiIHJ4PSIzIiBmaWxsPSIjYmY0NTIwIi8+Cjx0ZXh0IHg9IjM4OC4wIiB5PSIxMDYiIGZpbGw9IiNmZmZmZmYiIGZvbnQtc2l6ZT0iOCIgZm9udC1mYW1pbHk9IidDYXNjYWRpYSBNb25vJywgQ29uc29sYXMsIHVpLW1vbm9zcGFjZSwgTWVubG8sIG1vbm9zcGFjZSIgZm9udC13ZWlnaHQ9IjQwMCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+UlQtRUNPTi0wMDM8L3RleHQ+CjxyZWN0IHg9IjQzOCIgeT0iODgiIHdpZHRoPSI5MiIgaGVpZ2h0PSIyOCIgcng9IjMiIGZpbGw9InJnYmEoNzksOTMsMTE3LDAuMzApIi8+Cjx0ZXh0IHg9IjY0MiIgeT0iMTA2IiBmaWxsPSIjNGY1ZDc1IiBmb250LXNpemU9IjkiIGZvbnQtZmFtaWx5PSInQ2FzY2FkaWEgTW9ubycsIENvbnNvbGFzLCB1aS1tb25vc3BhY2UsIE1lbmxvLCBtb25vc3BhY2UiIGZvbnQtd2VpZ2h0PSI0MDAiIHRleHQtYW5jaG9yPSJzdGFydCI+Mi80PC90ZXh0Pgo8dGV4dCB4PSIxMzYiIHk9IjE1MiIgZmlsbD0iIzFmMjQzMCIgZm9udC1zaXplPSIxMiIgZm9udC1mYW1pbHk9IidTZWdvZSBVSScsIHN5c3RlbS11aSwgLWFwcGxlLXN5c3RlbSwgSGVsdmV0aWNhLCBBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC13ZWlnaHQ9IjYwMCIgdGV4dC1hbmNob3I9ImVuZCI+RXZpZGVuY2U8L3RleHQ+CjxyZWN0IHg9IjE1MCIgeT0iMTMyIiB3aWR0aD0iOTIiIGhlaWdodD0iMjgiIHJ4PSIzIiBmaWxsPSJyZ2JhKDc5LDkzLDExNywwLjMwKSIvPgo8cmVjdCB4PSIyNDYuNSIgeT0iMTMyLjUiIHdpZHRoPSI5MSIgaGVpZ2h0PSIyNyIgcng9IjMiIGZpbGw9IiNmZmZmZmYiIHN0cm9rZT0iIzFmMjQzMCIgc3Ryb2tlLXdpZHRoPSIxIiBzdHJva2UtZGFzaGFycmF5PSI0LDMiLz4KPHRleHQgeD0iMjkyLjAiIHk9IjE1MCIgZmlsbD0iIzFmMjQzMCIgZm9udC1zaXplPSI4IiBmb250LWZhbWlseT0iJ0Nhc2NhZGlhIE1vbm8nLCBDb25zb2xhcywgdWktbW9ub3NwYWNlLCBNZW5sbywgbW9ub3NwYWNlIiBmb250LXdlaWdodD0iNDAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5SVC1FVklELTAwMjwvdGV4dD4KPHJlY3QgeD0iMzQyIiB5PSIxMzIiIHdpZHRoPSI5MiIgaGVpZ2h0PSIyOCIgcng9IjMiIGZpbGw9InJnYmEoNzksOTMsMTE3LDAuMzApIi8+CjxyZWN0IHg9IjQzOCIgeT0iMTMyIiB3aWR0aD0iOTIiIGhlaWdodD0iMjgiIHJ4PSIzIiBmaWxsPSJyZ2JhKDc5LDkzLDExNywwLjMwKSIvPgo8dGV4dCB4PSI2NDIiIHk9IjE1MCIgZmlsbD0iIzRmNWQ3NSIgZm9udC1zaXplPSI5IiBmb250LWZhbWlseT0iJ0Nhc2NhZGlhIE1vbm8nLCBDb25zb2xhcywgdWktbW9ub3NwYWNlLCBNZW5sbywgbW9ub3NwYWNlIiBmb250LXdlaWdodD0iNDAwIiB0ZXh0LWFuY2hvcj0ic3RhcnQiPjMvNDwvdGV4dD4KPHRleHQgeD0iMTM2IiB5PSIxOTYiIGZpbGw9IiMxZjI0MzAiIGZvbnQtc2l6ZT0iMTIiIGZvbnQtZmFtaWx5PSInU2Vnb2UgVUknLCBzeXN0ZW0tdWksIC1hcHBsZS1zeXN0ZW0sIEhlbHZldGljYSwgQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI2MDAiIHRleHQtYW5jaG9yPSJlbmQiPkF1dGhvcml0eTwvdGV4dD4KPHJlY3QgeD0iMTUwIiB5PSIxNzYiIHdpZHRoPSI5MiIgaGVpZ2h0PSIyOCIgcng9IjMiIGZpbGw9InJnYmEoNzksOTMsMTE3LDAuMzApIi8+CjxyZWN0IHg9IjI0NiIgeT0iMTc2IiB3aWR0aD0iOTIiIGhlaWdodD0iMjgiIHJ4PSIzIiBmaWxsPSJyZ2JhKDc5LDkzLDExNywwLjMwKSIvPgo8cmVjdCB4PSIzNDIiIHk9IjE3NiIgd2lkdGg9IjkyIiBoZWlnaHQ9IjI4IiByeD0iMyIgZmlsbD0icmdiYSg3OSw5MywxMTcsMC4zMCkiLz4KPHJlY3QgeD0iNDM4IiB5PSIxNzYiIHdpZHRoPSI5MiIgaGVpZ2h0PSIyOCIgcng9IjMiIGZpbGw9InJnYmEoNzksOTMsMTE3LDAuMzApIi8+CjxyZWN0IHg9IjUzNCIgeT0iMTc2IiB3aWR0aD0iOTIiIGhlaWdodD0iMjgiIHJ4PSIzIiBmaWxsPSJyZ2JhKDc5LDkzLDExNywwLjMwKSIvPgo8dGV4dCB4PSI2NDIiIHk9IjE5NCIgZmlsbD0iIzRmNWQ3NSIgZm9udC1zaXplPSI5IiBmb250LWZhbWlseT0iJ0Nhc2NhZGlhIE1vbm8nLCBDb25zb2xhcywgdWktbW9ub3NwYWNlLCBNZW5sbywgbW9ub3NwYWNlIiBmb250LXdlaWdodD0iNDAwIiB0ZXh0LWFuY2hvcj0ic3RhcnQiPjUvNTwvdGV4dD4KPHRleHQgeD0iMTM2IiB5PSIyNDAiIGZpbGw9IiMxZjI0MzAiIGZvbnQtc2l6ZT0iMTIiIGZvbnQtZmFtaWx5PSInU2Vnb2UgVUknLCBzeXN0ZW0tdWksIC1hcHBsZS1zeXN0ZW0sIEhlbHZldGljYSwgQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI2MDAiIHRleHQtYW5jaG9yPSJlbmQiPkFkdmlzb3I8L3RleHQ+CjxyZWN0IHg9IjE1MCIgeT0iMjIwIiB3aWR0aD0iOTIiIGhlaWdodD0iMjgiIHJ4PSIzIiBmaWxsPSJyZ2JhKDc5LDkzLDExNywwLjMwKSIvPgo8cmVjdCB4PSIyNDYiIHk9IjIyMCIgd2lkdGg9IjkyIiBoZWlnaHQ9IjI4IiByeD0iMyIgZmlsbD0icmdiYSg3OSw5MywxMTcsMC4zMCkiLz4KPHRleHQgeD0iNjQyIiB5PSIyMzgiIGZpbGw9IiM0ZjVkNzUiIGZvbnQtc2l6ZT0iOSIgZm9udC1mYW1pbHk9IidDYXNjYWRpYSBNb25vJywgQ29uc29sYXMsIHVpLW1vbm9zcGFjZSwgTWVubG8sIG1vbm9zcGFjZSIgZm9udC13ZWlnaHQ9IjQwMCIgdGV4dC1hbmNob3I9InN0YXJ0Ij4yLzI8L3RleHQ+CjxsaW5lIHgxPSIzMCIgeTE9IjI2NCIgeDI9IjczMCIgeTI9IjI2NCIgc3Ryb2tlPSJyZ2JhKDMxLDM2LDQ4LDAuMTQpIiBzdHJva2Utd2lkdGg9IjAuOCIvPgo8dGV4dCB4PSIzMCIgeT0iMjgwIiBmaWxsPSIjNGY1ZDc1IiBmb250LXNpemU9IjgiIGZvbnQtZmFtaWx5PSInQ2FzY2FkaWEgTW9ubycsIENvbnNvbGFzLCB1aS1tb25vc3BhY2UsIE1lbmxvLCBtb25vc3BhY2UiIGZvbnQtd2VpZ2h0PSI0MDAiIHRleHQtYW5jaG9yPSJzdGFydCIgbGV0dGVyLXNwYWNpbmc9IjAuMTRlbSI+TEVHRU5EPC90ZXh0Pgo8cmVjdCB4PSIxMTAiIHk9IjI4MiIgd2lkdGg9IjE4IiBoZWlnaHQ9IjEwIiByeD0iMiIgZmlsbD0icmdiYSg3OSw5MywxMTcsMC4zMCkiLz4KPHRleHQgeD0iMTM0IiB5PSIyOTEiIGZpbGw9IiMxZjI0MzAiIGZvbnQtc2l6ZT0iOSIgZm9udC1mYW1pbHk9IidTZWdvZSBVSScsIHN5c3RlbS11aSwgLWFwcGxlLXN5c3RlbSwgSGVsdmV0aWNhLCBBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC13ZWlnaHQ9IjQwMCIgdGV4dC1hbmNob3I9InN0YXJ0Ij5kZWZlbmRlZCBieSB0aGUgY29udHJvbCB0aGUgYXR0YWNrIHRhcmdldHM8L3RleHQ+CjxyZWN0IHg9IjQwMCIgeT0iMjgyIiB3aWR0aD0iMTgiIGhlaWdodD0iMTAiIHJ4PSIyIiBmaWxsPSIjYmY0NTIwIi8+Cjx0ZXh0IHg9IjQyNCIgeT0iMjkxIiBmaWxsPSIjMWYyNDMwIiBmb250LXNpemU9IjkiIGZvbnQtZmFtaWx5PSInU2Vnb2UgVUknLCBzeXN0ZW0tdWksIC1hcHBsZS1zeXN0ZW0sIEhlbHZldGljYSwgQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI0MDAiIHRleHQtYW5jaG9yPSJzdGFydCI+ZGVmZW5kZWQgYnkgYWNjaWRlbnQgKGEgZmluZGluZyk8L3RleHQ+CjxyZWN0IHg9IjExMC41IiB5PSIzMDIuNSIgd2lkdGg9IjE3IiBoZWlnaHQ9IjkiIHJ4PSIyIiBmaWxsPSIjZmZmZmZmIiBzdHJva2U9IiMxZjI0MzAiIHN0cm9rZS1kYXNoYXJyYXk9IjQsMyIvPgo8dGV4dCB4PSIxMzQiIHk9IjMxMSIgZmlsbD0iIzFmMjQzMCIgZm9udC1zaXplPSI5IiBmb250LWZhbWlseT0iJ1NlZ29lIFVJJywgc3lzdGVtLXVpLCAtYXBwbGUtc3lzdGVtLCBIZWx2ZXRpY2EsIEFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXdlaWdodD0iNDAwIiB0ZXh0LWFuY2hvcj0ic3RhcnQiPnVuZGVmZW5kZWQsIG9wZW4gYnkgZGVzaWduPC90ZXh0Pgo8L3N2Zz4K" alt="Twenty attacks in five classes; seventeen defended by their target control, one refused by an unrelated control, and two open.">
+<figcaption>Figure 2. Outcomes by attack class. The single accidental defence is trust farming (RT-ECON-003): the strike is refused by a return-on-investment rule, and the risk control the attack targets never acts.</figcaption>
+</figure>
+
+<p>The current score, 17 defended, 1 by accident, 2 undefended and 0
+errors, is recorded in <code>redteam/baseline.json</code> in the
+reference implementation [14]. A test compares every live run against
+that file and fails on any difference in either direction, because a gap
+that closes is as much a deliberate change as a regression. A live run
+on 23 October 2026 matched it. The last sealed, checksummed experiment
+record, EXP-010 [15], covers the first eighteen attacks (15 / 1 / 2 /
+0); the two advisor attacks are in the baseline file but not yet in a
+sealed record. Version 0.1 of this paper said the twenty-attack score
+was in a sealed record, which was not accurate.</p>
+<p>Three properties of the instrument belong here rather than in
+§10.</p>
+<p>It is small, and nobody outside attacked it. OAP&#39;s capture-the-flag
+produced 4,437 adversarial decisions across 1,151 sessions with outside
+participants. Ours has twenty attacks, all written by the author of the
+system under test.</p>
+<p>It has no benign twins. PayBench pairs each trap with a safe
+lookalike, so an agent that refuses everything cannot score well. We
+have no such pairing. An implementation that refused all twenty attacks
+would score 20 out of 20, so the instrument does not measure
+over-refusal at all, which §2 argues is the expensive failure on an
+irreversible rail. We found this by reading a competitor&#39;s design.</p>
+<p>Two findings stay open. Structuring is bounded rather than refused,
+for reasons given in §7. Truncating the journal is caught only against
+an external anchor, and none ships by default, so the benchmark reports
+what an installer actually gets.</p>
+<h3 id="63-the-record-history-including-a-wrong-measurement">6.3 The
+record history, including a wrong measurement</h3>
+<p>The sealed records behind the score run EXP-008, then EXP-009, then
+EXP-010. EXP-009 supersedes EXP-008 because a measurement in it was
+wrong: an attack was set up over a time window its target control could
+not observe, so the result described the setup rather than the control.
+EXP-008 was not edited. It remains, marked superseded, with the reason
+attached.</p>
+<p>A history that contains a correction says more about the method than
+a clean one. A benchmark whose history shows no errors was either run
+very carefully or tidied very carefully, and a reader cannot tell
+which.</p>
 <hr />
 <h2 id="7--bounded-not-eliminated">7 · Bounded, not eliminated</h2>
-<p>The third claim is a specification obligation: <strong>where a
-control bounds a risk rather than eliminating it, the specification must
-require the implementation to say so.</strong></p>
-<p>This is unusual. Standards ordinarily specify what a control must
-<em>do</em>. The clause here specifies what an implementation must
-<em>admit</em> about the residual its control leaves behind — and both
+<p>The third claim is a disclosure rule: where a control limits a risk
+without removing it, the specification must require the implementation
+to say so.</p>
+<p>Standards usually say what a control must do. This clause says what
+an implementation must admit about what its control leaves behind. Both
 cases below ship with a conformance vector that asserts the limit, so
-the admission is scored rather than narrated.</p>
-<h3 id="71-count-envelopes-unbounded-becomes-bounded-by-a-number">7.1
-Count envelopes: unbounded becomes bounded-by-a-number</h3>
-<p>A rate limit bounds how <em>fast</em> an agent acts. A value envelope
-bounds how <em>much</em> it spends. Neither bounds <strong>how many
-times it acts over a window longer than the rate limit&#39;s</strong>, and
-nothing multiplied <em>trivial</em> by <em>many</em> and compared the
-product to anything.</p>
-<p>The measured consequence: an agent pacing at <strong>97 actions an
-hour — three per cent under a ceiling of 100 — was compliant
-indefinitely</strong>, at 2,328 actions a day for $2.33 against a $50
-daily budget. Every value envelope was out of reach because each action
-was trivial. Every rate limit was out of reach because the pacing sat
-under it.</p>
-<p>A cumulative count envelope closes it: the paced-evasion attack moved
-from undefended to defended, refused at action 500 and attributed to the
-treasury control citing <code>actions_per_day</code>.</p>
-<p><strong>What it does not do is eliminate structuring</strong>, and
-the specification requires saying so. Forty payments of $0.001 five
-minutes apart total $0.04 and are nowhere near 500 actions. The envelope
-bounds the mechanism at a number the operator chose; it does not refuse
-this instance.</p>
-<p><strong>And it should not.</strong> Forty trivial purchases in an
-afternoon is also what a legitimate agent does. A control that refused
-it would be producing a false positive on an irreversible rail, which §2
-argues is a real cost rather than a safe default. The honest statement
-is <em>bounded at a number you chose, not eliminated</em> — and the
-attack remains in the benchmark as <code>UNDEFENDED</code> rather than
-being reclassified.</p>
-<h3 id="72-anchoring-detectable-beyond-a-bound-the-operator-chose">7.2
-Anchoring: detectable, beyond a bound the operator chose</h3>
-<p>A hash chain detects edits and cannot detect truncation of its own
-tail, because <strong>any prefix of a valid chain is itself a valid
-chain.</strong> The missing information is <em>that there was more</em>,
-and no amount of internal linking supplies it.</p>
-<p>An external anchor supplies it: a <code>(length, head)</code>
-commitment published where the journal&#39;s writer cannot reach. This is
-Certificate Transparency&#39;s signed tree head applied to a spend journal,
-and §3.4 records that the survey establishing this refuted the novelty
-we had claimed for the mechanism.</p>
-<p><strong>The bound is the honest part.</strong> An anchor is published
-at some cadence, so everything appended since the last publication is
-unattested and remains silently truncatable. Anchoring does not make
-truncation detectable; it makes truncation detectable <strong>beyond a
-bound the operator chose</strong>. A vector asserts the difference
-rather than describing it.</p>
-<p>Verification therefore has four outcomes, not two:
-<code>consistent</code>, <code>truncated</code>, <code>diverged</code>,
-and <code>unknown</code> — and <strong><code>unknown</code> is never a
-pass.</strong> An anchor that cannot be read is a fact about the anchor,
-and reporting it as agreement would let anyone able to partition the
-verifier from the sink also make the journal verify.</p>
-<p>No anchor sink ships with the implementation. An append-only file
-beside the journal is that journal at one remove in any deployment where
-the agent&#39;s own host can rewrite it, and shipping one would make the gap
-<em>look</em> closed.</p>
-<h2 id="8--what-the-measurements-cost">8 · What the measurements
-cost</h2>
+the admission is scored.</p>
+<h3 id="71-count-envelopes-from-unlimited-to-limited-by-a-number-you-chose">7.1
+Count envelopes: from unlimited to limited by a number you chose</h3>
+<p>A rate limit caps how fast an agent acts. A value envelope caps how
+much it spends. Neither caps how many times it acts over a window longer
+than the rate limit&#39;s, and nothing multiplied a trivial amount by a
+large count and compared the result to anything.</p>
+<p>We measured the consequence. An agent pacing at 97 actions an hour,
+three per cent under a ceiling of 100, stayed compliant indefinitely:
+2,328 actions a day, $2.33 spent, against a $50 daily budget. Each
+action was too small to reach any value envelope, and the pace stayed
+under every rate limit.</p>
+<p>A cumulative count envelope closes this. The paced-evasion attack
+moved from undefended to defended, refused at action 500 and attributed
+to the treasury control citing <code>actions_per_day</code>.</p>
+<p>It does not end structuring, and the specification requires saying
+so. Forty payments of $0.001, five minutes apart, total $0.04 and come
+nowhere near 500 actions. The envelope limits the mechanism at a number
+the operator chose. It does not refuse this case, and it should not:
+forty small purchases in an afternoon is also what a legitimate agent
+does. Refusing it would be a false positive on an irreversible rail,
+which §2 counts as a real cost. The attack stays in the benchmark as
+<code>UNDEFENDED</code>.</p>
+<h3 id="72-anchoring-truncation-caught-beyond-a-bound-the-operator-chose">7.2
+Anchoring: truncation caught beyond a bound the operator chose</h3>
+<p>A hash chain catches edits, but it cannot catch someone cutting off
+its end, because any prefix of a valid chain is itself a valid chain.
+What is missing is the fact that there was more, and no amount of
+internal linking supplies it.</p>
+<p>An external anchor does: a commitment to the journal&#39;s length and
+head, published where the journal&#39;s writer cannot reach. This is
+Certificate Transparency&#39;s signed tree head [11] applied to a spending
+journal, and §3.4 records that the survey showing this refuted our
+novelty claim.</p>
+<p>The bound is the honest part. Anchors are published at some interval,
+so everything written since the last one can still be cut off without
+trace. Anchoring makes truncation detectable beyond a bound the operator
+chose, and a conformance vector asserts that difference.</p>
+<p>Verification therefore has four outcomes: <code>consistent</code>,
+<code>truncated</code>, <code>diverged</code> and <code>unknown</code>.
+<code>unknown</code> is never a pass. An anchor that cannot be read is a
+fact about the anchor, and treating it as agreement would let anyone who
+can cut the verifier off from the anchor make a truncated journal
+verify.</p>
+<p>No anchor ships with the implementation. An append-only file next to
+the journal is just the journal again wherever the agent&#39;s own machine
+can rewrite it, and shipping one would make the gap look closed.</p>
+<hr />
+<h2 id="8--where-should-the-control-sit-hooks-sdks-gateways-and-signers">8 ·
+Where should the control sit? Hooks, SDKs, gateways and signers</h2>
+<p>The argument so far applies wherever the control runs. In practice
+the question people ask first is where to put it, and on an x402 payment
+there are six candidate positions, each seeing a different part of the
+transaction.</p>
+<figure>
+<img role="img" aria-label="Sequence of one x402 payment between agent, x402 client, agent gateway, paid tool and facilitator, marking six places a spending control can act." src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA3NjAgNTYwIiB3aWR0aD0iNzYwIiBoZWlnaHQ9IjU2MCIgcm9sZT0iaW1nIiBhcmlhLWxhYmVsbGVkYnk9ImZpZy1wYXltZW50LXBhdGgtdGl0bGUgZmlnLXBheW1lbnQtcGF0aC1kZXNjIj4KPHRpdGxlIGlkPSJmaWctcGF5bWVudC1wYXRoLXRpdGxlIj5XaGVyZSBhIHNwZW5kaW5nIGNvbnRyb2wgY2FuIHNpdCBvbiBvbmUgeDQwMiBwYXltZW50PC90aXRsZT4KPGRlc2MgaWQ9ImZpZy1wYXltZW50LXBhdGgtZGVzYyI+U2VxdWVuY2Ugb2Ygb25lIHg0MDIgcGF5bWVudCBiZXR3ZWVuIGFnZW50LCB4NDAyIGNsaWVudCwgYWdlbnQgZ2F0ZXdheSwgcGFpZCB0b29sIGFuZCBmYWNpbGl0YXRvciwgbWFya2luZyBzaXggcGxhY2VzIGEgc3BlbmRpbmcgY29udHJvbCBjYW4gYWN0OyB0aGUgcHJlLXRvb2wgaG9vayBhY3RzIGJlZm9yZSB0aGUgc2VsbGVyIGhhcyBuYW1lZCBhIHByaWNlLjwvZGVzYz4KPGRlZnM+CjxtYXJrZXIgaWQ9ImZpZy1wYXltZW50LXBhdGgtYXJyb3ciIG1hcmtlcldpZHRoPSI4IiBtYXJrZXJIZWlnaHQ9IjYiIHJlZlg9IjciIHJlZlk9IjMiIG9yaWVudD0iYXV0byI+PHBvbHlnb24gcG9pbnRzPSIwIDAsIDggMywgMCA2IiBmaWxsPSIjNGY1ZDc1Ii8+PC9tYXJrZXI+CjxtYXJrZXIgaWQ9ImZpZy1wYXltZW50LXBhdGgtYXJyb3ctYWNjZW50IiBtYXJrZXJXaWR0aD0iOCIgbWFya2VySGVpZ2h0PSI2IiByZWZYPSI3IiByZWZZPSIzIiBvcmllbnQ9ImF1dG8iPjxwb2x5Z29uIHBvaW50cz0iMCAwLCA4IDMsIDAgNiIgZmlsbD0iI2JmNDUyMCIvPjwvbWFya2VyPgo8L2RlZnM+CjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiNmZmZmZmYiLz4KPHRleHQgeD0iMzAiIHk9IjIyIiBmaWxsPSIjNGY1ZDc1IiBmb250LXNpemU9IjgiIGZvbnQtZmFtaWx5PSInQ2FzY2FkaWEgTW9ubycsIENvbnNvbGFzLCB1aS1tb25vc3BhY2UsIE1lbmxvLCBtb25vc3BhY2UiIGZvbnQtd2VpZ2h0PSI0MDAiIHRleHQtYW5jaG9yPSJzdGFydCIgbGV0dGVyLXNwYWNpbmc9IjAuMTRlbSI+V0hFUkUgQSBTUEVORElORyBDT05UUk9MIENBTiBTSVQgT04gT05FIHg0MDIgUEFZTUVOVDwvdGV4dD4KPGxpbmUgeDE9IjgwIiB5MT0iODAiIHgyPSI4MCIgeTI9IjQ0NCIgc3Ryb2tlPSJyZ2JhKDMxLDM2LDQ4LDAuMTQpIiBzdHJva2Utd2lkdGg9IjEiIHN0cm9rZS1kYXNoYXJyYXk9IjQsNCIvPgo8bGluZSB4MT0iMjMwIiB5MT0iODAiIHgyPSIyMzAiIHkyPSI0NDQiIHN0cm9rZT0icmdiYSgzMSwzNiw0OCwwLjE0KSIgc3Ryb2tlLXdpZHRoPSIxIiBzdHJva2UtZGFzaGFycmF5PSI0LDQiLz4KPGxpbmUgeDE9IjM4MCIgeTE9IjgwIiB4Mj0iMzgwIiB5Mj0iNDQ0IiBzdHJva2U9InJnYmEoMzEsMzYsNDgsMC4xNCkiIHN0cm9rZS13aWR0aD0iMSIgc3Ryb2tlLWRhc2hhcnJheT0iNCw0Ii8+CjxsaW5lIHgxPSI1MzAiIHkxPSI4MCIgeDI9IjUzMCIgeTI9IjQ0NCIgc3Ryb2tlPSJyZ2JhKDMxLDM2LDQ4LDAuMTQpIiBzdHJva2Utd2lkdGg9IjEiIHN0cm9rZS1kYXNoYXJyYXk9IjQsNCIvPgo8bGluZSB4MT0iNjgwIiB5MT0iODAiIHgyPSI2ODAiIHkyPSI0NDQiIHN0cm9rZT0icmdiYSgzMSwzNiw0OCwwLjE0KSIgc3Ryb2tlLXdpZHRoPSIxIiBzdHJva2UtZGFzaGFycmF5PSI0LDQiLz4KPGxpbmUgeDE9IjgwIiB5MT0iMTIwIiB4Mj0iNTI0IiB5Mj0iMTIwIiBzdHJva2U9IiM0ZjVkNzUiIHN0cm9rZS13aWR0aD0iMS4yIiBtYXJrZXItZW5kPSJ1cmwoI2ZpZy1wYXltZW50LXBhdGgtYXJyb3cpIi8+CjxyZWN0IHg9IjI3NC4wIiB5PSIxMDAiIHdpZHRoPSI2MiIgaGVpZ2h0PSIxMiIgcng9IjIiIGZpbGw9IiNmZmZmZmYiLz4KPHRleHQgeD0iMzA1IiB5PSIxMDkiIGZpbGw9IiM1YTY1ODAiIGZvbnQtc2l6ZT0iOCIgZm9udC1mYW1pbHk9IidDYXNjYWRpYSBNb25vJywgQ29uc29sYXMsIHVpLW1vbm9zcGFjZSwgTWVubG8sIG1vbm9zcGFjZSIgZm9udC13ZWlnaHQ9IjQwMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgbGV0dGVyLXNwYWNpbmc9IjAuMDZlbSI+VE9PTFMvQ0FMTDwvdGV4dD4KPGxpbmUgeDE9IjUzMCIgeTE9IjE2NCIgeDI9Ijg2IiB5Mj0iMTY0IiBzdHJva2U9IiNiZjQ1MjAiIHN0cm9rZS13aWR0aD0iMS4yIiBzdHJva2UtZGFzaGFycmF5PSI1LDQiIG1hcmtlci1lbmQ9InVybCgjZmlnLXBheW1lbnQtcGF0aC1hcnJvdy1hY2NlbnQpIi8+CjxyZWN0IHg9IjI3MS41IiB5PSIxNDQiIHdpZHRoPSI2NyIgaGVpZ2h0PSIxMiIgcng9IjIiIGZpbGw9IiNmZmZmZmYiLz4KPHRleHQgeD0iMzA1IiB5PSIxNTMiIGZpbGw9IiM1YTY1ODAiIGZvbnQtc2l6ZT0iOCIgZm9udC1mYW1pbHk9IidDYXNjYWRpYSBNb25vJywgQ29uc29sYXMsIHVpLW1vbm9zcGFjZSwgTWVubG8sIG1vbm9zcGFjZSIgZm9udC13ZWlnaHQ9IjQwMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgbGV0dGVyLXNwYWNpbmc9IjAuMDZlbSI+NDAyICsgUFJJQ0U8L3RleHQ+CjxsaW5lIHgxPSI4MCIgeTE9IjIwOCIgeDI9IjIyNCIgeTI9IjIwOCIgc3Ryb2tlPSIjNGY1ZDc1IiBzdHJva2Utd2lkdGg9IjEuMiIgbWFya2VyLWVuZD0idXJsKCNmaWctcGF5bWVudC1wYXRoLWFycm93KSIvPgo8cmVjdCB4PSIxMTkuMCIgeT0iMTg4IiB3aWR0aD0iNzIiIGhlaWdodD0iMTIiIHJ4PSIyIiBmaWxsPSIjZmZmZmZmIi8+Cjx0ZXh0IHg9IjE1NS4wIiB5PSIxOTciIGZpbGw9IiM1YTY1ODAiIGZvbnQtc2l6ZT0iOCIgZm9udC1mYW1pbHk9IidDYXNjYWRpYSBNb25vJywgQ29uc29sYXMsIHVpLW1vbm9zcGFjZSwgTWVubG8sIG1vbm9zcGFjZSIgZm9udC13ZWlnaHQ9IjQwMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgbGV0dGVyLXNwYWNpbmc9IjAuMDZlbSI+U0lHTiBQQVlNRU5UPC90ZXh0Pgo8bGluZSB4MT0iMjMwIiB5MT0iMjUyIiB4Mj0iODYiIHkyPSIyNTIiIHN0cm9rZT0iIzRmNWQ3NSIgc3Ryb2tlLXdpZHRoPSIxLjIiIHN0cm9rZS1kYXNoYXJyYXk9IjUsNCIgbWFya2VyLWVuZD0idXJsKCNmaWctcGF5bWVudC1wYXRoLWFycm93KSIvPgo8cmVjdCB4PSIxMTcuMCIgeT0iMjMyIiB3aWR0aD0iNzYiIGhlaWdodD0iMTIiIHJ4PSIyIiBmaWxsPSIjZmZmZmZmIi8+Cjx0ZXh0IHg9IjE1NS4wIiB5PSIyNDEiIGZpbGw9IiM1YTY1ODAiIGZvbnQtc2l6ZT0iOCIgZm9udC1mYW1pbHk9IidDYXNjYWRpYSBNb25vJywgQ29uc29sYXMsIHVpLW1vbm9zcGFjZSwgTWVubG8sIG1vbm9zcGFjZSIgZm9udC13ZWlnaHQ9IjQwMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgbGV0dGVyLXNwYWNpbmc9IjAuMDZlbSI+QVVUSE9SSVpBVElPTjwvdGV4dD4KPGxpbmUgeDE9IjgwIiB5MT0iMjk2IiB4Mj0iNTI0IiB5Mj0iMjk2IiBzdHJva2U9IiM0ZjVkNzUiIHN0cm9rZS13aWR0aD0iMS4yIiBtYXJrZXItZW5kPSJ1cmwoI2ZpZy1wYXltZW50LXBhdGgtYXJyb3cpIi8+CjxyZWN0IHg9IjI2OS4wIiB5PSIyNzYiIHdpZHRoPSI3MiIgaGVpZ2h0PSIxMiIgcng9IjIiIGZpbGw9IiNmZmZmZmYiLz4KPHRleHQgeD0iMzA1IiB5PSIyODUiIGZpbGw9IiM1YTY1ODAiIGZvbnQtc2l6ZT0iOCIgZm9udC1mYW1pbHk9IidDYXNjYWRpYSBNb25vJywgQ29uc29sYXMsIHVpLW1vbm9zcGFjZSwgTWVubG8sIG1vbm9zcGFjZSIgZm9udC13ZWlnaHQ9IjQwMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgbGV0dGVyLXNwYWNpbmc9IjAuMDZlbSI+UkVUUlkgVy8gUEFZPC90ZXh0Pgo8bGluZSB4MT0iNTMwIiB5MT0iMzQwIiB4Mj0iNjc0IiB5Mj0iMzQwIiBzdHJva2U9IiM0ZjVkNzUiIHN0cm9rZS13aWR0aD0iMS4yIiBtYXJrZXItZW5kPSJ1cmwoI2ZpZy1wYXltZW50LXBhdGgtYXJyb3cpIi8+CjxyZWN0IHg9IjU2Ny4wIiB5PSIzMjAiIHdpZHRoPSI3NiIgaGVpZ2h0PSIxMiIgcng9IjIiIGZpbGw9IiNmZmZmZmYiLz4KPHRleHQgeD0iNjA1LjAiIHk9IjMyOSIgZmlsbD0iIzVhNjU4MCIgZm9udC1zaXplPSI4IiBmb250LWZhbWlseT0iJ0Nhc2NhZGlhIE1vbm8nLCBDb25zb2xhcywgdWktbW9ub3NwYWNlLCBNZW5sbywgbW9ub3NwYWNlIiBmb250LXdlaWdodD0iNDAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBsZXR0ZXItc3BhY2luZz0iMC4wNmVtIj5WRVJJRlkrU0VUVExFPC90ZXh0Pgo8bGluZSB4MT0iNjgwIiB5MT0iMzg0IiB4Mj0iNTM2IiB5Mj0iMzg0IiBzdHJva2U9IiM0ZjVkNzUiIHN0cm9rZS13aWR0aD0iMS4yIiBzdHJva2UtZGFzaGFycmF5PSI1LDQiIG1hcmtlci1lbmQ9InVybCgjZmlnLXBheW1lbnQtcGF0aC1hcnJvdykiLz4KPHJlY3QgeD0iNTgxLjUiIHk9IjM2NCIgd2lkdGg9IjQ3IiBoZWlnaHQ9IjEyIiByeD0iMiIgZmlsbD0iI2ZmZmZmZiIvPgo8dGV4dCB4PSI2MDUuMCIgeT0iMzczIiBmaWxsPSIjNWE2NTgwIiBmb250LXNpemU9IjgiIGZvbnQtZmFtaWx5PSInQ2FzY2FkaWEgTW9ubycsIENvbnNvbGFzLCB1aS1tb25vc3BhY2UsIE1lbmxvLCBtb25vc3BhY2UiIGZvbnQtd2VpZ2h0PSI0MDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGxldHRlci1zcGFjaW5nPSIwLjA2ZW0iPlNFVFRMRUQ8L3RleHQ+CjxsaW5lIHgxPSI1MzAiIHkxPSI0MjgiIHgyPSI4NiIgeTI9IjQyOCIgc3Ryb2tlPSIjNGY1ZDc1IiBzdHJva2Utd2lkdGg9IjEuMiIgc3Ryb2tlLWRhc2hhcnJheT0iNSw0IiBtYXJrZXItZW5kPSJ1cmwoI2ZpZy1wYXltZW50LXBhdGgtYXJyb3cpIi8+CjxyZWN0IHg9IjI2NC41IiB5PSI0MDgiIHdpZHRoPSI4MSIgaGVpZ2h0PSIxMiIgcng9IjIiIGZpbGw9IiNmZmZmZmYiLz4KPHRleHQgeD0iMzA1IiB5PSI0MTciIGZpbGw9IiM1YTY1ODAiIGZvbnQtc2l6ZT0iOCIgZm9udC1mYW1pbHk9IidDYXNjYWRpYSBNb25vJywgQ29uc29sYXMsIHVpLW1vbm9zcGFjZSwgTWVubG8sIG1vbm9zcGFjZSIgZm9udC13ZWlnaHQ9IjQwMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgbGV0dGVyLXNwYWNpbmc9IjAuMDZlbSI+UkVTVUxUK1JFQ0VJUFQ8L3RleHQ+CjxyZWN0IHg9IjIwIiB5PSIzNiIgd2lkdGg9IjEyMCIgaGVpZ2h0PSI0NCIgcng9IjYiIGZpbGw9IiNmZmZmZmYiLz4KPHJlY3QgeD0iMjAiIHk9IjM2IiB3aWR0aD0iMTIwIiBoZWlnaHQ9IjQ0IiByeD0iNiIgZmlsbD0iI2ZmZmZmZiIgc3Ryb2tlPSIjMWYyNDMwIiBzdHJva2Utd2lkdGg9IjEiLz4KPHRleHQgeD0iODAuMCIgeT0iNTYuMCIgZmlsbD0iIzFmMjQzMCIgZm9udC1zaXplPSIxMiIgZm9udC1mYW1pbHk9IidTZWdvZSBVSScsIHN5c3RlbS11aSwgLWFwcGxlLXN5c3RlbSwgSGVsdmV0aWNhLCBBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC13ZWlnaHQ9IjYwMCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+QWdlbnQ8L3RleHQ+Cjx0ZXh0IHg9IjgwLjAiIHk9IjcyLjAiIGZpbGw9IiM0ZjVkNzUiIGZvbnQtc2l6ZT0iOSIgZm9udC1mYW1pbHk9IidDYXNjYWRpYSBNb25vJywgQ29uc29sYXMsIHVpLW1vbm9zcGFjZSwgTWVubG8sIG1vbm9zcGFjZSIgZm9udC13ZWlnaHQ9IjQwMCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+TExNICsgdG9vbHM8L3RleHQ+CjxyZWN0IHg9IjE3MCIgeT0iMzYiIHdpZHRoPSIxMjAiIGhlaWdodD0iNDQiIHJ4PSI2IiBmaWxsPSIjZmZmZmZmIi8+CjxyZWN0IHg9IjE3MCIgeT0iMzYiIHdpZHRoPSIxMjAiIGhlaWdodD0iNDQiIHJ4PSI2IiBmaWxsPSIjZmZmZmZmIiBzdHJva2U9IiMxZjI0MzAiIHN0cm9rZS13aWR0aD0iMSIvPgo8dGV4dCB4PSIyMzAuMCIgeT0iNTYuMCIgZmlsbD0iIzFmMjQzMCIgZm9udC1zaXplPSIxMiIgZm9udC1mYW1pbHk9IidTZWdvZSBVSScsIHN5c3RlbS11aSwgLWFwcGxlLXN5c3RlbSwgSGVsdmV0aWNhLCBBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC13ZWlnaHQ9IjYwMCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+eDQwMiBjbGllbnQ8L3RleHQ+Cjx0ZXh0IHg9IjIzMC4wIiB5PSI3Mi4wIiBmaWxsPSIjNGY1ZDc1IiBmb250LXNpemU9IjkiIGZvbnQtZmFtaWx5PSInQ2FzY2FkaWEgTW9ubycsIENvbnNvbGFzLCB1aS1tb25vc3BhY2UsIE1lbmxvLCBtb25vc3BhY2UiIGZvbnQtd2VpZ2h0PSI0MDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiPndhbGxldCwgc2lnbmVyPC90ZXh0Pgo8cmVjdCB4PSIzMjAiIHk9IjM2IiB3aWR0aD0iMTIwIiBoZWlnaHQ9IjQ0IiByeD0iNiIgZmlsbD0iI2ZmZmZmZiIvPgo8cmVjdCB4PSIzMjAiIHk9IjM2IiB3aWR0aD0iMTIwIiBoZWlnaHQ9IjQ0IiByeD0iNiIgZmlsbD0iI2ZmZmZmZiIgc3Ryb2tlPSIjMWYyNDMwIiBzdHJva2Utd2lkdGg9IjEiLz4KPHRleHQgeD0iMzgwLjAiIHk9IjU2LjAiIGZpbGw9IiMxZjI0MzAiIGZvbnQtc2l6ZT0iMTIiIGZvbnQtZmFtaWx5PSInU2Vnb2UgVUknLCBzeXN0ZW0tdWksIC1hcHBsZS1zeXN0ZW0sIEhlbHZldGljYSwgQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI2MDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkFnZW50IGdhdGV3YXk8L3RleHQ+Cjx0ZXh0IHg9IjM4MC4wIiB5PSI3Mi4wIiBmaWxsPSIjNGY1ZDc1IiBmb250LXNpemU9IjkiIGZvbnQtZmFtaWx5PSInQ2FzY2FkaWEgTW9ubycsIENvbnNvbGFzLCB1aS1tb25vc3BhY2UsIE1lbmxvLCBtb25vc3BhY2UiIGZvbnQtd2VpZ2h0PSI0MDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiPk1DUCBwcm94eTwvdGV4dD4KPHJlY3QgeD0iNDcwIiB5PSIzNiIgd2lkdGg9IjEyMCIgaGVpZ2h0PSI0NCIgcng9IjYiIGZpbGw9IiNmZmZmZmYiLz4KPHJlY3QgeD0iNDcwIiB5PSIzNiIgd2lkdGg9IjEyMCIgaGVpZ2h0PSI0NCIgcng9IjYiIGZpbGw9IiNmZmZmZmYiIHN0cm9rZT0iIzFmMjQzMCIgc3Ryb2tlLXdpZHRoPSIxIi8+Cjx0ZXh0IHg9IjUzMC4wIiB5PSI1Ni4wIiBmaWxsPSIjMWYyNDMwIiBmb250LXNpemU9IjEyIiBmb250LWZhbWlseT0iJ1NlZ29lIFVJJywgc3lzdGVtLXVpLCAtYXBwbGUtc3lzdGVtLCBIZWx2ZXRpY2EsIEFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXdlaWdodD0iNjAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5QYWlkIHRvb2w8L3RleHQ+Cjx0ZXh0IHg9IjUzMC4wIiB5PSI3Mi4wIiBmaWxsPSIjNGY1ZDc1IiBmb250LXNpemU9IjkiIGZvbnQtZmFtaWx5PSInQ2FzY2FkaWEgTW9ubycsIENvbnNvbGFzLCB1aS1tb25vc3BhY2UsIE1lbmxvLCBtb25vc3BhY2UiIGZvbnQtd2VpZ2h0PSI0MDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiPng0MDIgc2VsbGVyPC90ZXh0Pgo8cmVjdCB4PSI2MjAiIHk9IjM2IiB3aWR0aD0iMTIwIiBoZWlnaHQ9IjQ0IiByeD0iNiIgZmlsbD0iI2ZmZmZmZiIvPgo8cmVjdCB4PSI2MjAiIHk9IjM2IiB3aWR0aD0iMTIwIiBoZWlnaHQ9IjQ0IiByeD0iNiIgZmlsbD0iI2ZmZmZmZiIgc3Ryb2tlPSIjMWYyNDMwIiBzdHJva2Utd2lkdGg9IjEiLz4KPHRleHQgeD0iNjgwLjAiIHk9IjU2LjAiIGZpbGw9IiMxZjI0MzAiIGZvbnQtc2l6ZT0iMTIiIGZvbnQtZmFtaWx5PSInU2Vnb2UgVUknLCBzeXN0ZW0tdWksIC1hcHBsZS1zeXN0ZW0sIEhlbHZldGljYSwgQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI2MDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkZhY2lsaXRhdG9yPC90ZXh0Pgo8dGV4dCB4PSI2ODAuMCIgeT0iNzIuMCIgZmlsbD0iIzRmNWQ3NSIgZm9udC1zaXplPSI5IiBmb250LWZhbWlseT0iJ0Nhc2NhZGlhIE1vbm8nLCBDb25zb2xhcywgdWktbW9ub3NwYWNlLCBNZW5sbywgbW9ub3NwYWNlIiBmb250LXdlaWdodD0iNDAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj52ZXJpZnksIHNldHRsZTwvdGV4dD4KPGNpcmNsZSBjeD0iODAiIGN5PSIxMjAiIHI9IjkiIGZpbGw9IiNmZmZmZmYiIHN0cm9rZT0iI2JmNDUyMCIgc3Ryb2tlLXdpZHRoPSIxLjIiLz4KPHRleHQgeD0iODAiIHk9IjEyMy41IiBmaWxsPSIjYmY0NTIwIiBmb250LXNpemU9IjkiIGZvbnQtZmFtaWx5PSInU2Vnb2UgVUknLCBzeXN0ZW0tdWksIC1hcHBsZS1zeXN0ZW0sIEhlbHZldGljYSwgQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI2MDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiPjE8L3RleHQ+CjxjaXJjbGUgY3g9IjIzMCIgY3k9IjIwOCIgcj0iOSIgZmlsbD0iI2ZmZmZmZiIgc3Ryb2tlPSIjMWYyNDMwIiBzdHJva2Utd2lkdGg9IjEuMiIvPgo8dGV4dCB4PSIyMzAiIHk9IjIxMS41IiBmaWxsPSIjMWYyNDMwIiBmb250LXNpemU9IjkiIGZvbnQtZmFtaWx5PSInU2Vnb2UgVUknLCBzeXN0ZW0tdWksIC1hcHBsZS1zeXN0ZW0sIEhlbHZldGljYSwgQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI2MDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiPjI8L3RleHQ+CjxjaXJjbGUgY3g9IjIzMCIgY3k9IjI1MiIgcj0iOSIgZmlsbD0iI2ZmZmZmZiIgc3Ryb2tlPSIjMWYyNDMwIiBzdHJva2Utd2lkdGg9IjEuMiIvPgo8dGV4dCB4PSIyMzAiIHk9IjI1NS41IiBmaWxsPSIjMWYyNDMwIiBmb250LXNpemU9IjkiIGZvbnQtZmFtaWx5PSInU2Vnb2UgVUknLCBzeXN0ZW0tdWksIC1hcHBsZS1zeXN0ZW0sIEhlbHZldGljYSwgQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI2MDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiPjM8L3RleHQ+CjxjaXJjbGUgY3g9IjM4MCIgY3k9IjI5NiIgcj0iOSIgZmlsbD0iI2ZmZmZmZiIgc3Ryb2tlPSIjMWYyNDMwIiBzdHJva2Utd2lkdGg9IjEuMiIvPgo8dGV4dCB4PSIzODAiIHk9IjI5OS41IiBmaWxsPSIjMWYyNDMwIiBmb250LXNpemU9IjkiIGZvbnQtZmFtaWx5PSInU2Vnb2UgVUknLCBzeXN0ZW0tdWksIC1hcHBsZS1zeXN0ZW0sIEhlbHZldGljYSwgQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI2MDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiPjQ8L3RleHQ+CjxjaXJjbGUgY3g9IjUzMCIgY3k9IjE2NCIgcj0iOSIgZmlsbD0iI2ZmZmZmZiIgc3Ryb2tlPSIjMWYyNDMwIiBzdHJva2Utd2lkdGg9IjEuMiIvPgo8dGV4dCB4PSI1MzAiIHk9IjE2Ny41IiBmaWxsPSIjMWYyNDMwIiBmb250LXNpemU9IjkiIGZvbnQtZmFtaWx5PSInU2Vnb2UgVUknLCBzeXN0ZW0tdWksIC1hcHBsZS1zeXN0ZW0sIEhlbHZldGljYSwgQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI2MDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiPjU8L3RleHQ+CjxjaXJjbGUgY3g9IjY4MCIgY3k9IjM0MCIgcj0iOSIgZmlsbD0iI2ZmZmZmZiIgc3Ryb2tlPSIjMWYyNDMwIiBzdHJva2Utd2lkdGg9IjEuMiIvPgo8dGV4dCB4PSI2ODAiIHk9IjM0My41IiBmaWxsPSIjMWYyNDMwIiBmb250LXNpemU9IjkiIGZvbnQtZmFtaWx5PSInU2Vnb2UgVUknLCBzeXN0ZW0tdWksIC1hcHBsZS1zeXN0ZW0sIEhlbHZldGljYSwgQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI2MDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiPjY8L3RleHQ+CjxsaW5lIHgxPSIzMCIgeTE9IjQ2MiIgeDI9IjczMCIgeTI9IjQ2MiIgc3Ryb2tlPSJyZ2JhKDMxLDM2LDQ4LDAuMTQpIiBzdHJva2Utd2lkdGg9IjAuOCIvPgo8dGV4dCB4PSIzMCIgeT0iNDc4IiBmaWxsPSIjNGY1ZDc1IiBmb250LXNpemU9IjgiIGZvbnQtZmFtaWx5PSInQ2FzY2FkaWEgTW9ubycsIENvbnNvbGFzLCB1aS1tb25vc3BhY2UsIE1lbmxvLCBtb25vc3BhY2UiIGZvbnQtd2VpZ2h0PSI0MDAiIHRleHQtYW5jaG9yPSJzdGFydCIgbGV0dGVyLXNwYWNpbmc9IjAuMTRlbSI+TEVHRU5EPC90ZXh0Pgo8Y2lyY2xlIGN4PSIxMTAiIGN5PSI0ODMiIHI9IjciIGZpbGw9IiNmZmZmZmYiIHN0cm9rZT0iI2JmNDUyMCIgc3Ryb2tlLXdpZHRoPSIxIi8+Cjx0ZXh0IHg9IjExMCIgeT0iNDg2IiBmaWxsPSIjYmY0NTIwIiBmb250LXNpemU9IjgiIGZvbnQtZmFtaWx5PSInU2Vnb2UgVUknLCBzeXN0ZW0tdWksIC1hcHBsZS1zeXN0ZW0sIEhlbHZldGljYSwgQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI2MDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiPjE8L3RleHQ+Cjx0ZXh0IHg9IjEyNCIgeT0iNDg2IiBmaWxsPSIjMWYyNDMwIiBmb250LXNpemU9IjkiIGZvbnQtZmFtaWx5PSInU2Vnb2UgVUknLCBzeXN0ZW0tdWksIC1hcHBsZS1zeXN0ZW0sIEhlbHZldGljYSwgQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI0MDAiIHRleHQtYW5jaG9yPSJzdGFydCI+cHJlLXRvb2wgaG9vazogZGVjaWRlcyBiZWZvcmUgYW55IHByaWNlIGV4aXN0czwvdGV4dD4KPGNpcmNsZSBjeD0iNDQwIiBjeT0iNDgzIiByPSI3IiBmaWxsPSIjZmZmZmZmIiBzdHJva2U9IiMxZjI0MzAiIHN0cm9rZS13aWR0aD0iMSIvPgo8dGV4dCB4PSI0NDAiIHk9IjQ4NiIgZmlsbD0iIzFmMjQzMCIgZm9udC1zaXplPSI4IiBmb250LWZhbWlseT0iJ1NlZ29lIFVJJywgc3lzdGVtLXVpLCAtYXBwbGUtc3lzdGVtLCBIZWx2ZXRpY2EsIEFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXdlaWdodD0iNjAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj4yPC90ZXh0Pgo8dGV4dCB4PSI0NTQiIHk9IjQ4NiIgZmlsbD0iIzFmMjQzMCIgZm9udC1zaXplPSI5IiBmb250LWZhbWlseT0iJ1NlZ29lIFVJJywgc3lzdGVtLXVpLCAtYXBwbGUtc3lzdGVtLCBIZWx2ZXRpY2EsIEFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXdlaWdodD0iNDAwIiB0ZXh0LWFuY2hvcj0ic3RhcnQiPmNsaWVudCBzcGVuZCBjb250cm9sczogcHJpY2Uga25vd24sIG5vdCB5ZXQgc2lnbmVkPC90ZXh0Pgo8Y2lyY2xlIGN4PSIxMTAiIGN5PSI1MDUiIHI9IjciIGZpbGw9IiNmZmZmZmYiIHN0cm9rZT0iIzFmMjQzMCIgc3Ryb2tlLXdpZHRoPSIxIi8+Cjx0ZXh0IHg9IjExMCIgeT0iNTA4IiBmaWxsPSIjMWYyNDMwIiBmb250LXNpemU9IjgiIGZvbnQtZmFtaWx5PSInU2Vnb2UgVUknLCBzeXN0ZW0tdWksIC1hcHBsZS1zeXN0ZW0sIEhlbHZldGljYSwgQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI2MDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiPjM8L3RleHQ+Cjx0ZXh0IHg9IjEyNCIgeT0iNTA4IiBmaWxsPSIjMWYyNDMwIiBmb250LXNpemU9IjkiIGZvbnQtZmFtaWx5PSInU2Vnb2UgVUknLCBzeXN0ZW0tdWksIC1hcHBsZS1zeXN0ZW0sIEhlbHZldGljYSwgQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI0MDAiIHRleHQtYW5jaG9yPSJzdGFydCI+Y3VzdG9kaWFsIHNpZ25lcjogY2FuIHJlZnVzZSB0byBzaWduPC90ZXh0Pgo8Y2lyY2xlIGN4PSI0NDAiIGN5PSI1MDUiIHI9IjciIGZpbGw9IiNmZmZmZmYiIHN0cm9rZT0iIzFmMjQzMCIgc3Ryb2tlLXdpZHRoPSIxIi8+Cjx0ZXh0IHg9IjQ0MCIgeT0iNTA4IiBmaWxsPSIjMWYyNDMwIiBmb250LXNpemU9IjgiIGZvbnQtZmFtaWx5PSInU2Vnb2UgVUknLCBzeXN0ZW0tdWksIC1hcHBsZS1zeXN0ZW0sIEhlbHZldGljYSwgQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI2MDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiPjQ8L3RleHQ+Cjx0ZXh0IHg9IjQ1NCIgeT0iNTA4IiBmaWxsPSIjMWYyNDMwIiBmb250LXNpemU9IjkiIGZvbnQtZmFtaWx5PSInU2Vnb2UgVUknLCBzeXN0ZW0tdWksIC1hcHBsZS1zeXN0ZW0sIEhlbHZldGljYSwgQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI0MDAiIHRleHQtYW5jaG9yPSJzdGFydCI+Z2F0ZXdheTogc2VlcyB0aGUgc2lnbmVkIGFtb3VudCBpbiB0cmFuc2l0PC90ZXh0Pgo8Y2lyY2xlIGN4PSIxMTAiIGN5PSI1MjciIHI9IjciIGZpbGw9IiNmZmZmZmYiIHN0cm9rZT0iIzFmMjQzMCIgc3Ryb2tlLXdpZHRoPSIxIi8+Cjx0ZXh0IHg9IjExMCIgeT0iNTMwIiBmaWxsPSIjMWYyNDMwIiBmb250LXNpemU9IjgiIGZvbnQtZmFtaWx5PSInU2Vnb2UgVUknLCBzeXN0ZW0tdWksIC1hcHBsZS1zeXN0ZW0sIEhlbHZldGljYSwgQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI2MDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiPjU8L3RleHQ+Cjx0ZXh0IHg9IjEyNCIgeT0iNTMwIiBmaWxsPSIjMWYyNDMwIiBmb250LXNpemU9IjkiIGZvbnQtZmFtaWx5PSInU2Vnb2UgVUknLCBzeXN0ZW0tdWksIC1hcHBsZS1zeXN0ZW0sIEhlbHZldGljYSwgQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI0MDAiIHRleHQtYW5jaG9yPSJzdGFydCI+c2VsbGVyOiBzZXRzIHRoZSBwcmljZSAodGhlIHByaWNlIGF1dGhvcml0eSk8L3RleHQ+CjxjaXJjbGUgY3g9IjQ0MCIgY3k9IjUyNyIgcj0iNyIgZmlsbD0iI2ZmZmZmZiIgc3Ryb2tlPSIjMWYyNDMwIiBzdHJva2Utd2lkdGg9IjEiLz4KPHRleHQgeD0iNDQwIiB5PSI1MzAiIGZpbGw9IiMxZjI0MzAiIGZvbnQtc2l6ZT0iOCIgZm9udC1mYW1pbHk9IidTZWdvZSBVSScsIHN5c3RlbS11aSwgLWFwcGxlLXN5c3RlbSwgSGVsdmV0aWNhLCBBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC13ZWlnaHQ9IjYwMCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+NjwvdGV4dD4KPHRleHQgeD0iNDU0IiB5PSI1MzAiIGZpbGw9IiMxZjI0MzAiIGZvbnQtc2l6ZT0iOSIgZm9udC1mYW1pbHk9IidTZWdvZSBVSScsIHN5c3RlbS11aSwgLWFwcGxlLXN5c3RlbSwgSGVsdmV0aWNhLCBBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC13ZWlnaHQ9IjQwMCIgdGV4dC1hbmNob3I9InN0YXJ0Ij5mYWNpbGl0YXRvcjogc2VlcyBzZXR0bGVtZW50LCBub3QgaW50ZW50PC90ZXh0Pgo8L3N2Zz4K" alt="Sequence of one x402 payment between agent, x402 client, agent gateway, paid tool and facilitator, marking six places a spending control can act.">
+<figcaption>Figure 3. One x402 payment over MCP [19] and the six places a control can act. The price exists only after the seller&#39;s 402 reply, so a control at position 1 decides before there is any price to check.</figcaption>
+</figure>
+
+<h3 id="81-what-each-position-can-see">8.1 What each position can
+see</h3>
+<table>
+<thead>
+<tr>
+<th>Position</th>
+<th>Examples</th>
+<th>Sees the price</th>
+<th>Sees what is signed</th>
+<th>Outside the agent&#39;s process</th>
+<th>Can stop the money</th>
+<th>One budget across agents</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1 · Pre-tool hook</td>
+<td>Claude Code <code>PreToolUse</code> [24], ADK
+<code>before_tool_callback</code> [25], OAP [1]</td>
+<td>no</td>
+<td>no</td>
+<td>no</td>
+<td>yes, by blocking the call</td>
+<td>no</td>
+</tr>
+<tr>
+<td>2 · Client spend controls</td>
+<td>x402 <code>maxAmountPerPayment</code>,
+<code>onBeforePaymentCreation</code> [18]</td>
+<td>yes</td>
+<td>yes, it signs</td>
+<td>no</td>
+<td>yes</td>
+<td>no</td>
+</tr>
+<tr>
+<td>3 · Custodial signer</td>
+<td>AWS AgentCore Payments [23]</td>
+<td>yes</td>
+<td>yes</td>
+<td>yes</td>
+<td>yes, by not signing</td>
+<td>yes, per session</td>
+</tr>
+<tr>
+<td>4 · Agent gateway</td>
+<td>MCP proxy policy (WSO2 API Platform; agentgateway proposal
+[22])</td>
+<td>yes</td>
+<td>yes, after signing</td>
+<td>yes</td>
+<td>only on this path</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>5 · Seller</td>
+<td>x402 resource server [19]</td>
+<td>sets it</td>
+<td>yes</td>
+<td>n/a</td>
+<td>for its own sales</td>
+<td>n/a</td>
+</tr>
+<tr>
+<td>6 · Facilitator</td>
+<td>x402 facilitator</td>
+<td>yes</td>
+<td>yes</td>
+<td>yes</td>
+<td>can refuse to settle</td>
+<td>n/a</td>
+</tr>
+</tbody>
+</table>
+<p><em>Table 2. Author&#39;s reading of each position from its documentation
+(references marked <code>[read]</code>). Only positions 2 and 4 were
+exercised in code. Position 4 was exercised by a spike policy on the
+WSO2 API Platform gateway, run once against a mock seller, and by its
+successor, which is unit-tested only. Nothing in this table was
+measured.</em></p>
+<p>A few of these cells deserve a sentence.</p>
+<p>A pre-tool hook decides before any price exists. In x402 the first
+<code>tools/call</code> carries no payment; the seller answers with a
+402 naming the price, and only the retry carries a signed authorization
+[19]. A hook can govern which tools an agent may call and with what
+arguments. It cannot hold a spending envelope against an amount it never
+sees, unless the price was declared somewhere in advance. Hooks also run
+inside the agent&#39;s environment. Claude Code&#39;s documentation says
+handlers <em>&quot;run in the current directory with Claude Code&#39;s
+environment&quot;</em> [24]. A control there protects against a confused
+agent. Against a compromised one it holds only if the agent cannot reach
+the signing key some other way.</p>
+<p>The client&#39;s spend controls are at the right moment: price known,
+nothing signed yet. The x402 client ships a per-payment cap
+(<code>maxAmountPerPayment</code>, default $1 on recognised USD assets),
+an asset allowlist, and a hook before payment creation [18]. A
+per-payment cap is not a budget: nothing there sums payments across
+time, and a cap held in one process does not see another process
+spending.</p>
+<p>A custodial signer is the strongest position, because a payment it
+does not sign cannot happen. AWS describes AgentCore Payments budgets
+this way: <em>&quot;Each PaymentSession has a configurable budget limit
+(maxSpendAmount, currency) and an expiry time. When the session expires
+or the budget is reached, further payment requests are denied.&quot;</em>
+[23] The cost is custody: someone has to hold the keys.</p>
+<p>A gateway sits outside the agent and sees the exact amount signed, so
+it can keep a budget per authenticated agent across every tool behind
+it. It sees the payment only after the agent has signed it. Refusing to
+forward stops settlement through the gateway, but an EIP-3009
+authorization stays valid until its <code>validBefore</code> time. A
+gateway is a control only if agents can reach paid tools through it and
+nowhere else, which is a network rule rather than a gateway feature.</p>
+<h3 id="82-what-people-building-this-are-saying">8.2 What people
+building this are saying</h3>
+<p>These are public statements, quoted as published, with dates.</p>
+<p>On the x402 client, an open issue filed on 21 October 2026 [21]
+reports a reproduced overpayment against an adversarial server and
+states the core of it: <em>&quot;in the default configuration the client
+treats the amount of the 402 accepts[] entry as the price to pay.&quot;</em>
+Its title ends: <em>&quot;spend limit is the only guard&quot;</em>.</p>
+<p>On putting payment awareness into an agent gateway, a maintainer of
+agentgateway replied on 8 September 2026 to a proposal for passive
+observability of agent payments [22]: <em>&quot;In theory I think this is in
+scope. … Especially with observability only I think it makes things much
+more viable.&quot;</em></p>
+<p>On a managed signer, AWS&#39;s documentation states the budget rule
+quoted in §8.1 [23]. It describes when payments are denied. In the
+documentation we read it does not describe a record of which limit
+denied a payment.</p>
+<h3 id="83-gaps-no-single-position-closes">8.3 Gaps no single position
+closes</h3>
+<p><strong>The price is the seller&#39;s word.</strong> Issue [21] shows the
+problem from the buyer&#39;s side. A check that the signed amount equals the
+agreed amount catches tampering between agreement and signature, but if
+the seller inflates the price, both numbers are inflated and agree.
+Per-payment caps and per-payee envelopes limit the damage without
+detecting it. x402&#39;s Offer and Receipt extension lets a server sign the
+terms it offers [20], which makes the seller&#39;s commitment checkable
+afterwards; it is still the seller&#39;s price. None of the six positions
+holds an independent view of what a resource should cost. That needs a
+source of price expectations outside the seller, which we did not find
+specified anywhere.</p>
+<p><strong>Budgets split across layers disagree.</strong> A deployment
+with a hook, client spend controls and a gateway has up to three places
+holding a version of the budget. They count different things: the client
+counts what it signed, the gateway counts what it forwarded or saw
+settle, and a hook counts calls. After a failed settlement or a retry,
+the three totals differ. None of the surveyed systems says which one is
+authoritative or how they reconcile.</p>
+<p><strong>Attribution has to name the layer as well as the
+control.</strong> §5 showed that two controls in one layer can tie at
+<code>REJECT</code>, and that the record then needs a fixed rule for
+which one it names. Two layers that both refuse produce the same tie one
+level up. If the client&#39;s cap and the gateway&#39;s envelope would both have
+refused, a record that says only &quot;budget&quot; does not tell the operator
+which budget to change. Defence in depth multiplies these ties. We think
+the record should name the layer and the control, and we have not
+specified how.</p>
+<p><strong>A refusal in transit does not revoke a signature.</strong>
+This is specific to positions 4 to 6, which act after signing. Bounding
+<code>validBefore</code> at the gateway would shorten the window in
+which a refused authorization could be replayed elsewhere. Nothing we
+surveyed does it, including our own gateway policy.</p>
+<hr />
+<h2 id="9--what-a-decision-costs">9 · What a decision costs</h2>
 <p>A pre-execution control sits on the critical path of every payment,
-so its cost is a design constraint rather than a footnote. The
-measurement is reported here with its variance, because the variance
-turned out to be the finding.</p>
-<h3 id="81-the-numbers">8.1 The numbers</h3>
-<p>Three thousand decisions across ten runs, against the
-<strong>published package installed from PyPI into a clean virtual
-environment</strong> — the artefact a user gets, not a source
-checkout.</p>
+so its cost matters. We report the measurement with its variance,
+because the variance turned out to be the result.</p>
+<h3 id="91-the-numbers">9.1 The numbers</h3>
+<p>Three thousand decisions in ten runs, against the published package
+installed from PyPI into a clean virtual environment, which is what a
+user gets [15].</p>
 <table>
 <thead>
 <tr>
@@ -733,199 +881,204 @@ checkout.</p>
 <tbody>
 <tr>
 <td>p50</td>
-<td><strong>168 µs</strong></td>
-<td>139–330 µs</td>
-<td><strong>2.37×</strong></td>
+<td>168 µs</td>
+<td>139 to 330 µs</td>
+<td>2.37×</td>
 </tr>
 <tr>
 <td>p99</td>
 <td>397.5 µs</td>
-<td>272–1,218 µs</td>
+<td>272 to 1,218 µs</td>
 <td>4.5×</td>
 </tr>
 </tbody>
 </table>
-<p><strong>Zero model invocations. $0.00 inference cost.</strong> The
-decision path invokes nothing probabilistic, which is what makes the
-figure a property of the code rather than of a provider&#39;s queue.</p>
-<h3 id="82-the-variance-is-the-result">8.2 The variance is the
-result</h3>
-<p>Ten identical runs of the same measurement produced p50 figures
-spanning <strong>2.37×</strong>. The instrument is one laptop, shared
-with other work while measuring, and that is stated in the sealed
-record&#39;s limitations rather than discovered by a reader.</p>
-<p>The consequence is a rule rather than a caveat: <strong>any
-single-run figure for this measurement carries no error bar and must not
-be quoted as precise.</strong> That applies to our own earlier records.
-An earlier experiment reported <strong>128 µs</strong> from a single run
-— a number that sits <em>below the minimum</em> of the ten-run
-distribution measured later. It was not wrong when taken. It was
-unrepeatable, and quoting it would have implied a precision the method
-never had.</p>
-<p>We report this because a latency figure with no distribution behind
-it is the easiest number in this field to publish and the least useful
-to receive.</p>
-<h3 id="83-the-comparison-we-are-not-making">8.3 The comparison we are
+<p>No model is called and inference costs nothing. The decision path
+invokes nothing probabilistic, so the figure belongs to the code rather
+than to a provider&#39;s queue.</p>
+<figure>
+<img role="img" aria-label="Dot plot of p50 decision latency over ten identical runs, 139 to 330 microseconds, with an earlier single-run figure of 128 microseconds below all of them." src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA3NjAgMjYwIiB3aWR0aD0iNzYwIiBoZWlnaHQ9IjI2MCIgcm9sZT0iaW1nIiBhcmlhLWxhYmVsbGVkYnk9ImZpZy1sYXRlbmN5LXRpdGxlIGZpZy1sYXRlbmN5LWRlc2MiPgo8dGl0bGUgaWQ9ImZpZy1sYXRlbmN5LXRpdGxlIj5UZW4gcnVucyBvZiBvbmUgbGF0ZW5jeSBtZWFzdXJlbWVudDwvdGl0bGU+CjxkZXNjIGlkPSJmaWctbGF0ZW5jeS1kZXNjIj5Eb3QgcGxvdCBvZiBwNTAgZGVjaXNpb24gbGF0ZW5jeSBvdmVyIHRlbiBpZGVudGljYWwgcnVucywgMTM5IHRvIDMzMCBtaWNyb3NlY29uZHMsIHdpdGggYW4gZWFybGllciBzaW5nbGUtcnVuIGZpZ3VyZSBvZiAxMjggbWljcm9zZWNvbmRzIGJlbG93IGFsbCBvZiB0aGVtLjwvZGVzYz4KPGRlZnM+CjxtYXJrZXIgaWQ9ImZpZy1sYXRlbmN5LWFycm93IiBtYXJrZXJXaWR0aD0iOCIgbWFya2VySGVpZ2h0PSI2IiByZWZYPSI3IiByZWZZPSIzIiBvcmllbnQ9ImF1dG8iPjxwb2x5Z29uIHBvaW50cz0iMCAwLCA4IDMsIDAgNiIgZmlsbD0iIzRmNWQ3NSIvPjwvbWFya2VyPgo8bWFya2VyIGlkPSJmaWctbGF0ZW5jeS1hcnJvdy1hY2NlbnQiIG1hcmtlcldpZHRoPSI4IiBtYXJrZXJIZWlnaHQ9IjYiIHJlZlg9IjciIHJlZlk9IjMiIG9yaWVudD0iYXV0byI+PHBvbHlnb24gcG9pbnRzPSIwIDAsIDggMywgMCA2IiBmaWxsPSIjYmY0NTIwIi8+PC9tYXJrZXI+CjwvZGVmcz4KPHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iI2ZmZmZmZiIvPgo8dGV4dCB4PSIzMCIgeT0iMjIiIGZpbGw9IiM0ZjVkNzUiIGZvbnQtc2l6ZT0iOCIgZm9udC1mYW1pbHk9IidDYXNjYWRpYSBNb25vJywgQ29uc29sYXMsIHVpLW1vbm9zcGFjZSwgTWVubG8sIG1vbm9zcGFjZSIgZm9udC13ZWlnaHQ9IjQwMCIgdGV4dC1hbmNob3I9InN0YXJ0IiBsZXR0ZXItc3BhY2luZz0iMC4xNGVtIj5wNTAgREVDSVNJT04gTEFURU5DWSwgVEVOIElERU5USUNBTCBSVU5TIChFWFAtMDA3KSwgTUlDUk9TRUNPTkRTPC90ZXh0Pgo8bGluZSB4MT0iMTIwIiB5MT0iMTgwIiB4Mj0iNzIwIiB5Mj0iMTgwIiBzdHJva2U9IiMxZjI0MzAiIHN0cm9rZS13aWR0aD0iMSIvPgo8bGluZSB4MT0iMTIwLjAiIHkxPSIxODAiIHgyPSIxMjAuMCIgeTI9IjE4NSIgc3Ryb2tlPSIjMWYyNDMwIiBzdHJva2Utd2lkdGg9IjEiLz4KPHRleHQgeD0iMTIwLjAiIHk9IjE5OCIgZmlsbD0iIzRmNWQ3NSIgZm9udC1zaXplPSI5IiBmb250LWZhbWlseT0iJ0Nhc2NhZGlhIE1vbm8nLCBDb25zb2xhcywgdWktbW9ub3NwYWNlLCBNZW5sbywgbW9ub3NwYWNlIiBmb250LXdlaWdodD0iNDAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj4xMDAgwrVzPC90ZXh0Pgo8bGluZSB4MT0iMjQwLjAiIHkxPSIxODAiIHgyPSIyNDAuMCIgeTI9IjE4NSIgc3Ryb2tlPSIjMWYyNDMwIiBzdHJva2Utd2lkdGg9IjEiLz4KPHRleHQgeD0iMjQwLjAiIHk9IjE5OCIgZmlsbD0iIzRmNWQ3NSIgZm9udC1zaXplPSI5IiBmb250LWZhbWlseT0iJ0Nhc2NhZGlhIE1vbm8nLCBDb25zb2xhcywgdWktbW9ub3NwYWNlLCBNZW5sbywgbW9ub3NwYWNlIiBmb250LXdlaWdodD0iNDAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj4xNTAgwrVzPC90ZXh0Pgo8bGluZSB4MT0iMzYwLjAiIHkxPSIxODAiIHgyPSIzNjAuMCIgeTI9IjE4NSIgc3Ryb2tlPSIjMWYyNDMwIiBzdHJva2Utd2lkdGg9IjEiLz4KPHRleHQgeD0iMzYwLjAiIHk9IjE5OCIgZmlsbD0iIzRmNWQ3NSIgZm9udC1zaXplPSI5IiBmb250LWZhbWlseT0iJ0Nhc2NhZGlhIE1vbm8nLCBDb25zb2xhcywgdWktbW9ub3NwYWNlLCBNZW5sbywgbW9ub3NwYWNlIiBmb250LXdlaWdodD0iNDAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj4yMDAgwrVzPC90ZXh0Pgo8bGluZSB4MT0iNDgwLjAiIHkxPSIxODAiIHgyPSI0ODAuMCIgeTI9IjE4NSIgc3Ryb2tlPSIjMWYyNDMwIiBzdHJva2Utd2lkdGg9IjEiLz4KPHRleHQgeD0iNDgwLjAiIHk9IjE5OCIgZmlsbD0iIzRmNWQ3NSIgZm9udC1zaXplPSI5IiBmb250LWZhbWlseT0iJ0Nhc2NhZGlhIE1vbm8nLCBDb25zb2xhcywgdWktbW9ub3NwYWNlLCBNZW5sbywgbW9ub3NwYWNlIiBmb250LXdlaWdodD0iNDAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj4yNTAgwrVzPC90ZXh0Pgo8bGluZSB4MT0iNjAwLjAiIHkxPSIxODAiIHgyPSI2MDAuMCIgeTI9IjE4NSIgc3Ryb2tlPSIjMWYyNDMwIiBzdHJva2Utd2lkdGg9IjEiLz4KPHRleHQgeD0iNjAwLjAiIHk9IjE5OCIgZmlsbD0iIzRmNWQ3NSIgZm9udC1zaXplPSI5IiBmb250LWZhbWlseT0iJ0Nhc2NhZGlhIE1vbm8nLCBDb25zb2xhcywgdWktbW9ub3NwYWNlLCBNZW5sbywgbW9ub3NwYWNlIiBmb250LXdlaWdodD0iNDAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj4zMDAgwrVzPC90ZXh0Pgo8bGluZSB4MT0iNzIwLjAiIHkxPSIxODAiIHgyPSI3MjAuMCIgeTI9IjE4NSIgc3Ryb2tlPSIjMWYyNDMwIiBzdHJva2Utd2lkdGg9IjEiLz4KPHRleHQgeD0iNzIwLjAiIHk9IjE5OCIgZmlsbD0iIzRmNWQ3NSIgZm9udC1zaXplPSI5IiBmb250LWZhbWlseT0iJ0Nhc2NhZGlhIE1vbm8nLCBDb25zb2xhcywgdWktbW9ub3NwYWNlLCBNZW5sbywgbW9ub3NwYWNlIiBmb250LXdlaWdodD0iNDAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj4zNTAgwrVzPC90ZXh0Pgo8bGluZSB4MT0iMjgzLjIiIHkxPSI1NiIgeDI9IjI4My4yIiB5Mj0iMTE4IiBzdHJva2U9IiM0ZjVkNzUiIHN0cm9rZS13aWR0aD0iMSIgc3Ryb2tlLWRhc2hhcnJheT0iNCwzIi8+Cjx0ZXh0IHg9IjI4OS4yIiB5PSI2NCIgZmlsbD0iIzRmNWQ3NSIgZm9udC1zaXplPSI5IiBmb250LWZhbWlseT0iJ0Nhc2NhZGlhIE1vbm8nLCBDb25zb2xhcywgdWktbW9ub3NwYWNlLCBNZW5sbywgbW9ub3NwYWNlIiBmb250LXdlaWdodD0iNDAwIiB0ZXh0LWFuY2hvcj0ic3RhcnQiPm1lZGlhbiAxNjggwrVzPC90ZXh0Pgo8dGV4dCB4PSIxMDgiIHk9IjEwNCIgZmlsbD0iIzFmMjQzMCIgZm9udC1zaXplPSIxMiIgZm9udC1mYW1pbHk9IidTZWdvZSBVSScsIHN5c3RlbS11aSwgLWFwcGxlLXN5c3RlbSwgSGVsdmV0aWNhLCBBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC13ZWlnaHQ9IjYwMCIgdGV4dC1hbmNob3I9ImVuZCI+dGVuIHJ1bnM8L3RleHQ+CjxjaXJjbGUgY3g9IjIxMy42IiBjeT0iMTAwIiByPSI1IiBmaWxsPSIjNGY1ZDc1Ii8+CjxjaXJjbGUgY3g9IjIzMi44IiBjeT0iMTAwIiByPSI1IiBmaWxsPSIjNGY1ZDc1Ii8+CjxjaXJjbGUgY3g9IjI0OS42IiBjeT0iMTAwIiByPSI1IiBmaWxsPSIjNGY1ZDc1Ii8+CjxjaXJjbGUgY3g9IjI3OC40IiBjeT0iMTAwIiByPSI1IiBmaWxsPSIjNGY1ZDc1Ii8+CjxjaXJjbGUgY3g9IjI4MC44IiBjeT0iODgiIHI9IjUiIGZpbGw9IiM0ZjVkNzUiLz4KPGNpcmNsZSBjeD0iMjg1LjYiIGN5PSI3NiIgcj0iNSIgZmlsbD0iIzRmNWQ3NSIvPgo8Y2lyY2xlIGN4PSIzMDIuNCIgY3k9IjEwMCIgcj0iNSIgZmlsbD0iIzRmNWQ3NSIvPgo8Y2lyY2xlIGN4PSIzNjkuNiIgY3k9IjEwMCIgcj0iNSIgZmlsbD0iIzRmNWQ3NSIvPgo8Y2lyY2xlIGN4PSI1NTQuNCIgY3k9IjEwMCIgcj0iNSIgZmlsbD0iIzRmNWQ3NSIvPgo8Y2lyY2xlIGN4PSI2NzIuMCIgY3k9IjEwMCIgcj0iNSIgZmlsbD0iIzRmNWQ3NSIvPgo8dGV4dCB4PSIxMDgiIHk9IjE1NCIgZmlsbD0iIzFmMjQzMCIgZm9udC1zaXplPSIxMiIgZm9udC1mYW1pbHk9IidTZWdvZSBVSScsIHN5c3RlbS11aSwgLWFwcGxlLXN5c3RlbSwgSGVsdmV0aWNhLCBBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC13ZWlnaHQ9IjYwMCIgdGV4dC1hbmNob3I9ImVuZCI+b25lIGVhcmxpZXIgcnVuPC90ZXh0Pgo8Y2lyY2xlIGN4PSIxODcuMiIgY3k9IjE1MCIgcj0iNS41IiBmaWxsPSIjYmY0NTIwIi8+Cjx0ZXh0IHg9IjE5OS4yIiB5PSIxNTQiIGZpbGw9IiNiZjQ1MjAiIGZvbnQtc2l6ZT0iOSIgZm9udC1mYW1pbHk9IidDYXNjYWRpYSBNb25vJywgQ29uc29sYXMsIHVpLW1vbm9zcGFjZSwgTWVubG8sIG1vbm9zcGFjZSIgZm9udC13ZWlnaHQ9IjQwMCIgdGV4dC1hbmNob3I9InN0YXJ0Ij4xMjggwrVzLCBzaW5nbGUgcnVuOiBiZWxvdyB0aGUgbWluaW11bSBvZiBhbGwgdGVuPC90ZXh0Pgo8dGV4dCB4PSIzODAiIHk9IjIzNiIgZmlsbD0iIzFmMjQzMCIgZm9udC1zaXplPSIxMyIgZm9udC1mYW1pbHk9IkNoYXJ0ZXIsICdCaXRzdHJlYW0gQ2hhcnRlcicsIEdlb3JnaWEsIENhbWJyaWEsIHNlcmlmIiBmb250LXdlaWdodD0iNDAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXN0eWxlPSJpdGFsaWMiPkZhc3Rlc3QgYW5kIHNsb3dlc3Qgb2YgdGVuIGlkZW50aWNhbCBydW5zIGRpZmZlciAyLjM3w5cuIE9uZSBsYXB0b3AsIHNoYXJlZCB3aXRoIG90aGVyIHdvcmsuPC90ZXh0Pgo8L3N2Zz4K" alt="Dot plot of p50 decision latency over ten identical runs, 139 to 330 microseconds, with an earlier single-run figure of 128 microseconds below all of them.">
+<figcaption>Figure 4. Ten identical runs of the same measurement. The earlier single-run figure sits below the fastest of the ten.</figcaption>
+</figure>
+
+<h3 id="92-the-variance-is-the-finding">9.2 The variance is the
+finding</h3>
+<p>Ten identical runs gave p50 figures spanning 2.37×. The instrument
+was one laptop, in use for other work during the runs, and the sealed
+record says so.</p>
+<p>The rule that follows: a single-run figure for this measurement has
+no error bar and must not be quoted as precise. That includes our own.
+An earlier experiment reported 128 µs from a single run, which is below
+the minimum of the ten runs measured later. It was not wrong when taken.
+It could not be repeated, and quoting it would have implied a precision
+the method never had.</p>
+<h3 id="93-the-comparison-we-are-not-making">9.3 The comparison we are
 not making</h3>
-<p>OAP reports <strong>53 ms p50</strong> for its cloud API and
-<strong>174 ms</strong> for local evaluation. Ours is 168 µs. That looks
-like three orders of magnitude and <strong>it is not a like-for-like
-comparison, so we do not make one.</strong></p>
-<p>OAP&#39;s cloud figure includes server-side processing at an edge network
-and excludes the client&#39;s network round-trip; its local figure is
-dominated by Python subprocess overhead. Ours is an in-process function
-call with no network, no subprocess and no signature verification on the
-path. <strong>These measure different architectures answering to
-different deployment requirements</strong> — a portable credential
-verified by an independent service is doing work an in-process library
-does not do, and that work is the reason someone would choose it.</p>
-<p>The honest statement is narrow: <strong>a deterministic pre-execution
-decision need not cost a network round-trip</strong>, and where the
-layer runs in the agent&#39;s own process it does not. Whether that matters
-depends entirely on whether the deployment can tolerate the trust
-assumption that comes with it, which §9 records as a limitation rather
-than resolving.</p>
+<p>OAP reports 53 ms p50 for its cloud API and 174 ms for local
+evaluation. Ours is 168 µs. That looks like three orders of magnitude,
+and it is not a fair comparison, so we do not make it.</p>
+<p>OAP&#39;s cloud figure includes processing at an edge network and leaves
+out the client&#39;s round trip. Its local figure is dominated by Python
+subprocess overhead. Ours is an in-process function call with no
+network, no subprocess and no signature check on the path. A portable
+credential verified by an independent service does work an in-process
+library skips, and that work is why someone would choose it.</p>
+<p>What the numbers do show is narrow: a deterministic decision before a
+payment need not cost a network round trip, and where the layer runs
+inside the agent&#39;s process it does not. Whether that is acceptable
+depends on whether the deployment can accept the trust that comes with
+running in the agent&#39;s process, which §8.1 and §10 leave open.</p>
 <hr />
-<h2 id="9--limitations">9 · Limitations</h2>
-<p>This section is the union of the limitations sections of every sealed
-record cited, plus the ones that belong to the work as a whole. It is
-not a summary of them.</p>
-<h3 id="91-the-benchmark">9.1 The benchmark</h3>
-<p><strong>Every attack was written by the author of the system under
-test.</strong> This is the single largest hole in the paper. An
-adversarial benchmark authored by the defender measures what the
-defender thought to try, and the correlation between that and what an
-attacker would try is unknown. OAP&#39;s capture-the-flag with external
-participants is better on exactly this axis and we say so in §3.1.</p>
-<p><strong>There are no benign twins, so over-refusal is
-unmeasured.</strong> An implementation refusing all twenty attacks
-scores 20/20 on this instrument. PayBench&#39;s matched trap/lookalike
-pairing exists precisely to prevent that, and adopting it would change
-what our score means. <strong>Until it is adopted, the score should be
-read as an upper bound on defence and as silent about false
-positives</strong> — which §2 argues is the expensive failure on an
-irreversible rail.</p>
-<p><strong>Twenty attacks is small</strong>, and the five classes were
-chosen by the same author.</p>
-<p><strong>The threat model is an adversarial agent, not an adversarial
-host</strong>, and one measured exposure falls outside it. The value
-envelopes sum settled rows only, so an authorisation nobody reports back
-on consumes no budget: ten $9 authorisations against a $50 daily ceiling
-leave the counter at zero. An attack was written for this and
-<strong>withdrawn</strong>, because the agent does not control whether
-settlement is reported — that is the embedding process, which this model
-trusts. Shaping it into an agent attack would have meant granting the
-adversary a capability the model does not give it in order to produce a
-finding. The exposure is real, is reported by a separate reconciliation
-surface, and is named here rather than counted in the score.</p>
-<p>A threat model in which the embedding process is untrusted is
-defensible — it is what a provider running someone else&#39;s agent code
-would want — and it is not the one measured here.</p>
-<h3 id="92-the-measurements">9.2 The measurements</h3>
-<p>One laptop, shared with other work, Windows 11. p50 varies 2.37×
-across identical runs. No measurement here was taken on server hardware,
-under concurrency, or with a cold cache. The p99 figures span 272–1,218
-µs and no claim is made about tail behaviour under load.</p>
-<p>Nothing was settled and no model was invoked: this is the decision
-path in isolation, not an end-to-end payment.</p>
-<h3 id="93-the-specification-and-the-standard">9.3 The specification and
-the standard</h3>
-<p><strong>There is one implementation, and the same person wrote both
-it and the standard.</strong> A specification with a single
-implementation is a description of that implementation, and no amount of
-further work by that person changes it. Machine-readable vectors and a
-conformance suite that installs separately exist so a second
-implementation is possible without permission; whether one appears is
-outside our control and is the open question of §10.</p>
-<p><strong>Four adjacent fields remain unsurveyed</strong> — transaction
-monitoring and AML, cloud and FinOps quota systems, AI governance
-frameworks, and agent governance beyond Microsoft&#39;s toolkit. We do not
-believe they touch the three surviving claims. We believed the same
-about capability-based security on the morning of the day it removed
-one, and §3.3 records the result.</p>
-<h3 id="94-scope">9.4 Scope</h3>
-<p><strong>One rail.</strong> Everything measured here is x402 and
-stablecoin settlement. The card, AP2 and bank bindings are specified as
-shapes and not implemented, so any claim about generality is
-untested.</p>
-<p><strong>Two red-team findings are open by design.</strong>
-Structuring is bounded rather than refused (§7.1); journal truncation is
-closed only against an external anchor and no anchor ships (§7.2).</p>
-<p><strong>No compliance is claimed with any framework.</strong> The
-obligations discussed in §2 and §4 attach to issuers, service providers
-and obliged institutions. The layer described here is a library and is
-none of those. It consumes compliance signals and does not produce them:
-it performs no sanctions screening, holds no list, and implements no
-transfer-information protocol.</p>
-<p><strong>The AML profile it defines, it does not meet.</strong> The
-specification defines a vertical conformance profile requiring a
-recorded AML position, and the reference implementation <strong>does not
-conform to it</strong> — there is no AML control, so no assessment key
-is emitted. We regard a profile the reference implementation fails as
-better evidence that the profile measures something than one it
-passes.</p>
+<h2 id="10--limitations">10 · Limitations</h2>
+<p>This section collects the limitations of every sealed record cited,
+plus those of the work as a whole.</p>
+<h3 id="101-the-benchmark">10.1 The benchmark</h3>
+<p>Every attack was written by the author of the system under test. This
+is the largest hole in the paper. An adversarial benchmark written by
+the defender measures what the defender thought to try, and nobody knows
+how well that matches what an attacker would try. OAP&#39;s capture-the-flag
+with outside participants is better on exactly this point (§3.1).</p>
+<p>There are no benign twins, so over-refusal is not measured. An
+implementation that refused all twenty attacks would score 20 out of 20.
+PayBench&#39;s matched pairs exist to prevent that, and adopting them would
+change what our score means. Until then the score is an upper bound on
+defence and says nothing about false positives, which §2 argues is the
+expensive failure on an irreversible rail.</p>
+<p>Twenty attacks is a small number, and the same author chose the five
+classes.</p>
+<p>The threat model is an adversarial agent, not an adversarial host,
+and one exposure we measured falls outside it. The value envelopes add
+up settled payments only, so an authorization nobody reports back on
+consumes no budget: ten $9 authorizations against a $50 daily ceiling
+leave the counter at zero. We wrote an attack for this and withdrew it,
+because the agent does not decide whether settlement is reported; the
+embedding process does, and this threat model trusts it. Turning it into
+an agent attack would have meant giving the attacker a capability the
+model does not give it. The exposure is real, a separate reconciliation
+surface reports it, and we name it here instead of counting it in the
+score. A threat model with an untrusted embedding process is reasonable
+(it is what a provider running someone else&#39;s agent would want), and it
+is not the one measured here.</p>
+<p>The twenty-attack score lives in a baseline file checked by a test.
+The last sealed record covers eighteen attacks (§6.2).</p>
+<h3 id="102-the-measurements">10.2 The measurements</h3>
+<p>One laptop, in use for other work, running Windows 11. The p50 varies
+2.37× across identical runs. No measurement was taken on server
+hardware, under concurrency, or with a cold cache. The p99 figures span
+272 to 1,218 µs, and we make no claim about the tail under load. Nothing
+was settled and no model was called: this is the decision path on its
+own, not a payment end to end.</p>
+<h3 id="103-the-standard">10.3 The standard</h3>
+<p>There is one implementation, and the same person wrote it and the
+standard. A specification with one implementation describes that
+implementation, and nothing more that person does can change it. The
+vectors are machine-readable and the conformance suite installs
+separately so that a second implementation needs nobody&#39;s permission.
+Whether one appears is outside our control, and it is the question §11
+ends on.</p>
+<p>Four adjacent fields are unsurveyed (§3.6).</p>
+<h3 id="104-scope">10.4 Scope</h3>
+<p>Everything measured here is x402 with stablecoin settlement. The
+card, AP2 and bank bindings exist as specified shapes and are not
+implemented, so any claim of generality is untested.</p>
+<p>The placement analysis in §8 is a reading of documentation. Positions
+1, 3, 5 and 6 were not exercised in code by us. Position 4 was exercised
+by a spike policy run once against a mock seller, and by a successor
+policy that has been unit-tested and not yet run on a gateway.</p>
+<p>Two red-team findings are open by design: structuring is bounded
+rather than refused (§7.1), and journal truncation is caught only
+against an external anchor, none of which ships (§7.2).</p>
+<p>No compliance with any framework is claimed. The obligations
+discussed in §2 and §4 fall on issuers, service providers and obliged
+institutions [16, 17]. The Travel Rule&#39;s required data names whose money
+moved and not who instructed the payment [5, 6], and the message formats
+that carry it either make an initiating party optional (pacs.008 [7]) or
+have no such element (IVMS101 [8]), so a payment an agent made leaves no
+trace of the agent in that record. The layer described here is a library
+and is none of those. It uses compliance signals and does not produce
+them: it performs no sanctions screening, holds no list, and implements
+no transfer-information protocol.</p>
+<p>The specification defines a vertical profile requiring a recorded AML
+position, and the reference implementation does not meet it, because it
+has no AML control and so emits no assessment. A profile the reference
+implementation fails is better evidence that the profile measures
+something than one it passes.</p>
 <hr />
-<h2 id="10--conclusion-and-the-question-we-cannot-answer">10 ·
-Conclusion, and the question we cannot answer</h2>
-<p>The argument of this paper is small and can be restated in three
-sentences.</p>
+<h2 id="11--the-question-we-cant-answer-from-inside">11 · The question
+we can&#39;t answer from inside</h2>
+<p>The argument fits in three sentences.</p>
 <p>Where a control layer decides before an irreversible payment, the
-verdict is order-independent and the attribution is not — so a
-specification that requires attribution must also make evaluation order
-normative, and one that does not require it cannot tell a working
-control from a decorative one. Where a control bounds a risk rather than
-removing it, the specification should require the implementation to say
-which, because <em>bounded at a number you chose</em> and
-<em>eliminated</em> are different promises and only one of them is
-usually true. And where a benchmark scores a control layer, a refusal by
-a control that was not aiming at the attack is a coincidence rather than
-a defence, and counting it as a pass rewards the wrong thing.</p>
-<p>None of these needs the layer we built. They are properties a
-specification can require of anything in this category, and the category
+verdict does not depend on order and the attribution does, so a
+specification that requires attribution must also fix the order, and one
+that does not require it cannot tell a working control from a decorative
+one. Where a control limits a risk without removing it, the
+specification should make the implementation say which, because a limit
+you chose and an eliminated risk are different promises and usually only
+the first is true. Where a benchmark scores a control layer, a refusal
+by a control that was not aimed at the attack is luck, and counting it
+as a defence rewards the wrong thing.</p>
+<p>None of this needs the layer we built. These are properties a
+specification can require of anything in the category, and the category
 now has several independent implementations, none of which requires
-them.</p>
+them. Section 8 suggests the requirement grows rather than shrinks as
+deployments stack controls at several positions on the same payment.</p>
 <h3 id="the-open-question">The open question</h3>
-<p>A conformance standard exists to let someone check an implementation
-they did not write. This one has been checked only by its author,
-against an implementation by the same author, using vectors by the same
-author. Every mechanism that would make third-party validation possible
-is in place — machine-readable vectors, a suite that installs separately
-and scores a record it has never seen before, profile manifests that are
-data rather than code — and none of it constitutes evidence that anyone
-else can or will do it.</p>
-<p><strong>So the honest closing question is not whether the claims in
-this paper are true. It is whether a governance standard can be
-validated by anyone other than its author, and we have no way to answer
-that from inside.</strong></p>
-<p>The three surveys in §3 are the closest thing to an answer we have:
-each removed a claim by consulting people who owed us nothing, and one
-removed a claim we had invented that same day. That is what external
-validation feels like from the receiving end, and it is the argument for
-wanting more of it rather than less.</p>
+<p>A conformance standard exists so that someone can check an
+implementation they did not write. This one has been checked only by its
+author, against an implementation by the same author, using vectors by
+the same author. The mechanisms that would let a third party check it
+are in place: machine-readable vectors, a suite that installs separately
+and scores records it has never seen, profile manifests that are data
+rather than code. None of that is evidence that anyone else can or will
+use them.</p>
+<p>So the honest closing question is whether a governance standard can
+be validated by anyone other than its author, and we have no way to
+answer it from inside.</p>
+<p>The three surveys in §3 are the closest we have to an answer. Each
+removed a claim by consulting people who owed us nothing, and one
+removed a claim we had invented that same day. That is what outside
+validation feels like from the receiving end, and it is why we want more
+of it.</p>
+<hr />
+<h2 id="disclosure">Disclosure</h2>
+<p>Drafting, editing and the figure generator were done with an AI
+assistant (Anthropic&#39;s Claude). Every claim, quotation, number and
+reference was checked by the author against the cited source or sealed
+record, and responsibility for all of it is the author&#39;s.</p>
+<h2 id="changes-from-version-01">Changes from version 0.1</h2>
+<ul>
+<li>§8 is new: where a control can sit on an x402 payment, what each
+position sees, public statements from people building in this space, and
+four gaps no single position closes.</li>
+<li>Four figures and two comparison tables added; prose rewritten for
+readability with the claims unchanged.</li>
+<li>§6.2 corrected: the twenty-attack score is in a baseline file
+checked by a test, not in a sealed record; the last sealed record covers
+eighteen attacks.</li>
+<li>References [9] to [11] verified against primary sources; references
+[18] to [25] added.</li>
+<li>Reference [14] updated to tesoro 0.1.3, which carries the same code
+as 0.1.2 plus a source distribution.</li>
+</ul>
 <hr />
 <h2 id="references">References</h2>
 <p>Marked by how each was consulted, because the paper argues that
-provenance should be visible and it would be strange to exempt its own
-bibliography. <strong><code>[read]</code></strong> — the source text was
-retrieved and read. <strong><code>[secondary]</code></strong> —
-consulted through summaries or through another paper&#39;s description.</p>
+provenance should be visible. <code>[read]</code> means the source text
+was retrieved and read. <code>[secondary]</code> means it was consulted
+through summaries or another paper&#39;s description.</p>
 <p><strong>[1]</strong> <code>[read]</code> U. Uchibeke. <em>Before the
 Tool Call: Deterministic Pre-Action Authorization for Autonomous AI
 Agents.</em> APort Technologies, arXiv:2603.20953, March 2026. CC BY
 4.0. Specification released under Apache 2.0, DOI
 10.5281/zenodo.18901596. <em>Retrieved and read in full; all quotations
-in §3.1 and §5 verified against the PDF text.</em></p>
+in §1, §3.1 and §5 verified against the PDF text.</em></p>
 <p><strong>[2]</strong> <code>[read]</code> N. Palumbo, S. Choudhary, J.
 Choi, G. Amir, P. Chalasani, S. Jha. <em>Policy Compiler for Secure
 Agentic Systems.</em> University of Wisconsin–Madison, Cornell
 University, Langroid. arXiv:2602.16708, 2026. The system is named FORGE.
-<em>Retrieved and read 2026-08-30, having been flagged in the first
-version of this bibliography as characterised only through [1]&#39;s
-description of it. Reading it changed §3.1: the paper attributes events
-to entities via a principal function, which is a different question from
-which control decided, and it contains no occurrence of the latter —
-making it a third independent confirmation rather than a competitor for
-claim 1.</em></p>
+<em>Retrieved and read 2026-08-30. Reading it changed §3.1: the paper
+attributes events to entities through a principal function, which is a
+different question from which control decided.</em></p>
 <p><strong>[3]</strong> <code>[read]</code> <em>Intent-Driven Computing:
 A Computational Model for Governed Autonomous Systems.</em>
 arXiv:2605.24036, 2026. <em>Retrieved and read; the
@@ -935,12 +1088,12 @@ text.</em></p>
 <p><strong>[4]</strong> <code>[secondary]</code> C. Plunkett.
 <em>PayBench: A Benchmark for Unsafe Commercial Autonomy in AI Agents
 with Delegated Payment Authority.</em> 2026. <code>paybench.org</code>.
-<em>Design and scale read from the project site; the matched
-trap/lookalike construction described in §3.1 and §6.2 comes from that
-source, not from running the benchmark.</em></p>
+<em>Design and scale read from the project site; the matched trap and
+lookalike construction comes from that source, not from running the
+benchmark.</em></p>
 <p><strong>[5]</strong> <code>[read]</code> Financial Action Task Force.
 <em>International Standards on Combating Money Laundering and the
-Financing of Terrorism &amp; Proliferation — The FATF
+Financing of Terrorism &amp; Proliferation: The FATF
 Recommendations.</em> Consolidated text, 2012–2025.
 <code>fatf-gafi.org</code>. <em>Retrieved 2026-08-28 and read; the
 required data set of INR.16 ¶9 and the glossary definition of
@@ -948,18 +1101,17 @@ required data set of INR.16 ¶9 and the glossary definition of
 <p><strong>[6]</strong> <code>[read]</code> Financial Action Task Force.
 <em>Explanatory note for revised R.16.</em> June 2025.
 <code>fatf-gafi.org</code>. <em>Retrieved 2026-08-28 and read; the
-&quot;allows&quot; → &quot;requests&quot; redline verified against the adopted text of
+&quot;allows&quot; to &quot;requests&quot; redline verified against the adopted text of
 [5].</em></p>
 <p><strong>[7]</strong> <code>[secondary]</code> Clearstream. <em>Usage
-Guideline CBPR+ pacs.008.001.08 — FIToFICustomerCreditTransfer.</em>
+Guideline CBPR+ pacs.008.001.08, FIToFICustomerCreditTransfer.</em>
 <em>The <code>InitiatingParty [0..1]</code> and
 <code>UltimateDebtor [0..1]</code> elements were read from this usage
 guideline, which is an implementation profile of ISO 20022 rather than
 the standard itself.</em></p>
 <p><strong>[8]</strong> <code>[secondary]</code> interVASP Messaging
 Standard, IVMS101. <em>Data model consulted through published
-documentation rather than the standard text; the absence of an
-initiating-party element in §2.1 is stated on that basis.</em></p>
+documentation rather than the standard text.</em></p>
 <p><strong>[9]</strong> <code>[read]</code> A. Birgisson, J. G. Politz,
 Ú. Erlingsson, A. Taly, M. Vrable, M. Lentczner. <em>Macaroons: Cookies
 with Contextual Caveats for Decentralized Authorization in the
@@ -972,70 +1124,97 @@ paper; the one given here was checked at doi.org.</em></p>
 <p><strong>[10]</strong> <code>[read]</code> C. Ellison, B. Frantz, B.
 Lampson, R. Rivest, B. Thomas, T. Ylonen. <em>SPKI Certificate
 Theory.</em> RFC 2693, Experimental, September 1999. <em>Retrieved and
-read 2026-10-24. The claim §3.3 draws from it is in §6.3: two 5-tuples
-reduce to one whose authorization is <code>AIntersect(A1, A2)</code> and
-whose validity is <code>VIntersect(V1, V2)</code> — effective authority
-through a delegation chain is the intersection, which is the clamp this
-paper concedes.</em></p>
+read 2026-10-24. §6.3 reduces two 5-tuples to one whose authorization is
+<code>AIntersect(A1, A2)</code> and whose validity is
+<code>VIntersect(V1, V2)</code>.</em></p>
 <p><strong>[11]</strong> <code>[read]</code> B. Laurie, A. Langley, E.
 Kasper. <em>Certificate Transparency.</em> RFC 6962, Experimental, June
 2013. <em>Retrieved and read 2026-10-24; the signed tree head of §3.5
-signs <code>tree_size</code> and <code>sha256_root_hash</code> — the
-<code>(length, head)</code> commitment §3.4 concedes the anchoring
-mechanism to.</em></p>
+signs <code>tree_size</code> and <code>sha256_root_hash</code>.</em></p>
 <p><strong>[12]</strong> <code>[secondary]</code> OASIS. <em>eXtensible
 Access Control Markup Language (XACML) Version 3.0</em>, 2013. <em>The
-optional <code>PolicyIdentifierList</code> in a response is the basis of
-§3.2 and was read in secondary description rather than in the
-specification.</em></p>
-<p><strong>[13]</strong> <code>[read]</code> AEGS — <em>Autonomous
+optional <code>PolicyIdentifierList</code> in a response was read in
+secondary description rather than in the specification.</em></p>
+<p><strong>[13]</strong> <code>[read]</code> AEGS, <em>Autonomous
 Economic Governance Standard</em>, version 0.1.
 <code>github.com/tesoro-labs/aegs</code>. The specification this paper&#39;s
 claims are expressed in: 95 clauses, 167 machine-readable conformance
 vectors, four profiles. CC BY 4.0.</p>
-<p><strong>[14]</strong> <code>[read]</code> tesoro, version 0.1.2.
+<p><strong>[14]</strong> <code>[read]</code> tesoro, version 0.1.3.
 <code>github.com/tesoro-labs/tesoro</code>,
-<code>pypi.org/project/tesoro</code>. The reference implementation.
-Apache 2.0.</p>
+<code>pypi.org/project/tesoro</code>. The reference implementation,
+including <code>redteam/baseline.json</code>. Apache 2.0.</p>
 <p><strong>[15]</strong> <code>[read]</code> Sealed experiment records
-EXP-007 through EXP-010,
+EXP-007 to EXP-010,
 <code>github.com/tesoro-labs/aegs/tree/main/research/experiments</code>.
-Every measured figure in §6 and §8 resolves to one of these, each
-carrying a checksum and its own limitations section. EXP-009 supersedes
-EXP-008 because a measurement in it was wrong; the superseded record is
-retained unedited.</p>
+Every measured figure in §6 and §9 resolves to one of these or to [14],
+each record carrying a checksum and its own limitations. EXP-009
+supersedes EXP-008 because a measurement in it was wrong; the superseded
+record is kept unedited.</p>
 <p><strong>[16]</strong> <code>[secondary]</code> Financial Crimes
 Enforcement Network and Office of Foreign Assets Control. <em>Permitted
 Payment Stablecoin Issuer AML/CFT Program and Sanctions Compliance
 Program Requirements.</em> Notice of proposed rulemaking, Federal
 Register, 10 April 2026. <em>Read through the Federal Register listing
-and published law-firm analyses; <strong>the NPRM itself was not
-read</strong>.</em></p>
+and published law-firm analyses; the NPRM itself was not read.</em></p>
 <p><strong>[17]</strong> <code>[secondary]</code> Sumsub. <em>Stablecoin
 compliance in 2026: which rules apply to your business.</em> The seven
-frameworks and six obliged-entity segments used in §2 and §4 are that
-document&#39;s structure, credited as its analysis rather than presented as
-ours.</p>
+frameworks and six obliged-entity segments behind §2 and §4 are that
+document&#39;s structure.</p>
+<p><strong>[18]</strong> <code>[read]</code> x402 Foundation.
+<em>@x402/core client documentation: spend controls, payment policies
+and lifecycle hooks.</em> <code>github.com/x402-foundation/x402</code>,
+<code>typescript/packages/core/README.md</code>. <em>Retrieved
+2026-10-24; <code>maxAmountPerPayment</code> (default <code>$1</code> on
+default assets), <code>allowedAssets</code> and
+<code>onBeforePaymentCreation</code> read in the source.</em></p>
+<p><strong>[19]</strong> <code>[read]</code> x402 Foundation. <em>x402
+v2 transport: MCP.</em> <code>specs/transports-v2/mcp.md</code>.
+<em>Retrieved 2026-10-24; payment required as a tool result with
+<code>isError: true</code>, payment in
+<code>_meta[&quot;x402/payment&quot;]</code>, settlement in
+<code>_meta[&quot;x402/payment-response&quot;]</code>.</em></p>
+<p><strong>[20]</strong> <code>[read]</code> x402 Foundation. <em>Offer
+and Receipt Extension.</em>
+<code>specs/extensions/extension-offer-and-receipt.md</code>.
+<em>Retrieved 2026-10-24; signed offers and signed receipts from the
+resource server.</em></p>
+<p><strong>[21]</strong> <code>[read]</code> x402 Foundation issue
+#3866. <em>&quot;@x402/fetch client signs and submits a payment for ANY
+amount the server declares in the 402 requirements: ×10 overcharge
+captured, spend limit is the only guard.&quot;</em> Opened 2026-10-21, open
+when read on 2026-10-24.
+<code>github.com/x402-foundation/x402/issues/3866</code>.</p>
+<p><strong>[22]</strong> <code>[read]</code> agentgateway issue #3376.
+<em>&quot;Feature proposal: Passive observability for AI agent
+payments.&quot;</em> Opened 2026-09-08; maintainer reply quoted from the same
+date. <code>github.com/agentgateway/agentgateway/issues/3376</code>.</p>
+<p><strong>[23]</strong> <code>[read]</code> Amazon Web Services.
+<em>Amazon Bedrock AgentCore payments</em> (developer guide, preview).
+<code>docs.aws.amazon.com/bedrock-agentcore/latest/devguide/payments.html</code>.
+<em>Retrieved 2026-10-23; budget rule quoted in §8.1.</em></p>
+<p><strong>[24]</strong> <code>[read]</code> Anthropic. <em>Claude Code
+hooks reference.</em> <code>code.claude.com/docs/en/hooks</code>.
+<em>Retrieved 2026-10-24; <code>PreToolUse</code> fires before a tool
+call and can deny it; handlers run with Claude Code&#39;s
+environment.</em></p>
+<p><strong>[25]</strong> <code>[read]</code> Google. <em>Agent
+Development Kit: types of callbacks.</em>
+<code>adk.dev/callbacks/types-of-callbacks/</code>. <em>Retrieved
+2026-10-24; <code>before_tool_callback</code> runs before a tool
+executes, and a returned dictionary is used as the tool&#39;s result instead
+of running it.</em></p>
 <hr />
 <h3 id="a-note-on-this-bibliography">A note on this bibliography</h3>
-<p><strong>Ten of seventeen entries are marked
-<code>[read]</code>.</strong> The rest were consulted at one remove, and
-each says how.</p>
-<p>Entry <code>[2]</code> moved from <code>[secondary]</code> to
-<code>[read]</code> on 2026-08-30, and the move changed §3.1 rather than
-merely upgrading a label — which is the argument for retrieving sources
-you have only heard described.</p>
-<p>Marking them is not modesty. This paper&#39;s central argument is that a
-record should say which control decided, and its method section claims
-that a source able to kill or save a claim gets read in its own text. A
-bibliography that presented all seventeen as equally consulted would
-contradict both positions on the last page.</p>
-<p>Entries <code>[9]</code>–<code>[11]</code> moved from
-<code>[unverified]</code> to <code>[read]</code> on 2026-10-24. Each
-concession stood — macaroons attenuate, CT commits to a tree head, SPKI
-reduces a chain by intersection — and checking them still found
-something: the DOI printed on the Macaroons paper&#39;s own first page
-points at a different paper. A citation copied from the source is not
-thereby a checked citation.</p>
+<p>Nineteen of twenty-five entries are marked <code>[read]</code>. The
+rest were consulted at one remove, and each entry says how.</p>
+<p>Entry [2] moved from <code>[secondary]</code> to <code>[read]</code>
+in August 2026, and the move changed §3.1, which is the argument for
+retrieving sources you have only heard described. Entries [9] to [11]
+moved from unverified to <code>[read]</code> in October 2026. Each
+concession stood, and checking them still found something: the DOI
+printed on the Macaroons paper&#39;s own first page points at a different
+paper. A citation copied from the source is not thereby a checked
+citation.</p>
 </body>
 </html>

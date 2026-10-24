@@ -3,8 +3,8 @@
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23610076.svg)](https://doi.org/10.5281/zenodo.23610076)
 
 **Paper:** *Which control decided? Required attribution in pre-execution payment governance* —
-Jayath de Silva, preprint draft v0.1, 2026. [`paper/paper.pdf`](paper/paper.pdf) ·
-[DOI 10.5281/zenodo.23610077](https://doi.org/10.5281/zenodo.23610077) (this version) ·
+Jayath de Silva, preprint draft v0.2, 2026. [`paper/paper.pdf`](paper/paper.pdf) ·
+[DOI 10.5281/zenodo.23610077](https://doi.org/10.5281/zenodo.23610077) (v0.1) ·
 [10.5281/zenodo.23610076](https://doi.org/10.5281/zenodo.23610076) (all versions). Not peer reviewed.
 
 Research artefacts for the white paper on autonomous economic governance, and for the standards

@@ -52,7 +52,8 @@ def to_html() -> None:
         [tool("pandoc"), str(SOURCE), "--from", "gfm-tex_math_dollars-tex_math_gfm",
          "--to", "html5", "--standalone",
          "--metadata", f"title={TITLE}", "--metadata", "pagetitle=" + TITLE,
-         "--css", str(CSS), "--embed-resources", "--output", str(HTML)],
+         "--css", str(CSS), "--embed-resources", "--resource-path", str(HERE),
+         "--output", str(HTML)],
         check=True, capture_output=True,
     )
 

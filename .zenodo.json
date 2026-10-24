@@ -2,7 +2,7 @@
   "title": "Which control decided? Required attribution in pre-execution payment governance",
   "upload_type": "publication",
   "publication_type": "preprint",
-  "description": "Autonomous agents can now initiate payments on settlement rails that do not govern the payer, and several systems published in 2026 place a deterministic decision before an agent's action. We do not propose another. We argue that this category, which already has independent implementations, is missing one property, and we say precisely what it costs to require it.  Under narrowing-only composition — where each control may make a verdict stricter and never more permissive — the final verdict is the join of all proposals and is therefore independent of evaluation order. **The attributed control is not.** We show that the last control to narrow is the first control in the evaluation order attaining the maximum severity, and hence that attribution depends on order *if and only if more than one control attains that maximum*. Ties are the common case rather than a corner: any two categorical refusals collide at the top of the lattice by construction. A specification that requires attribution must therefore make evaluation order normative, and must supply structure outside the lattice — declared dispositive controls — to resolve the ties the ordering alone cannot.  We make three contributions, and they are small. First, attribution as a **required and independently conformance-scorable** output: named on permit as well as on refusal, with precedence fixed in advance, checkable by a third party holding only machine-readable vectors. Second, **\"bounded, not eliminated\" as a disclosure obligation** — a normative requirement that an implementation state the residual its control leaves behind, with two worked cases. Third, a benchmark scoring rule, `DEFENDED_BY_ACCIDENT`, which counts *refused by a control the attack does not target* as a finding rather than a pass.  We report the reference implementation's results honestly: 20 adversarial attacks, 17 defended, one defended by accident, two open by design. We also report that the instrument has no benign scenarios, so an implementation refusing everything would score perfectly — a defect we found by reading a competitor's design rather than by testing our own. Three prior-art surveys removed three larger claims during preparation, including one we invented and withdrew within a day, and §3 reports each removal.",
+  "description": "AI agents can now pay for things on their own, over settlement rails that do not govern the payer. Several systems published in 2026 put a deterministic check in front of an agent's action. We do not propose another one. We argue that this category, which already has independent implementations, is missing one property, and we work out what it costs to require it. When controls can only make a verdict stricter, the final verdict is the strictest one any control proposed, so the order the controls run in does not change it. The record of which control decided is a different matter. The last control to tighten the verdict is the first one in the order to reach the maximum, so attribution depends on order exactly when two or more controls reach that maximum. That happens all the time: any two outright refusals tie at the top. A specification that requires attribution therefore has to fix the evaluation order, and has to declare which controls win a tie. We make three small contributions. Attribution as a required output that a third party can score from machine-readable vectors, on approvals as well as refusals. A disclosure rule we call *bounded, not eliminated*, which obliges an implementation to state what its control leaves behind. And a benchmark scoring rule, `DEFENDED_BY_ACCIDENT`, which counts an attack refused by a control that was not aiming at it as a finding rather than a pass. Version 0.2 adds a map of where such a control can sit on an x402 payment (a pre-tool hook, the client's spend controls, a custodial signer, an agent gateway, the seller, the facilitator) and what each position can and cannot see. A pre-tool hook decides before the seller has named a price. A gateway sees the signed amount but cannot revoke it. No position holds an independent view of what the price should have been. The reference implementation scores 17 of 20 attacks defended, one by accident and two open by design. The instrument has no benign scenarios, so an implementation that refused everything would score perfectly; we found that defect by reading a competitor's design. Three prior-art surveys removed three larger claims while we wrote this, and §3 reports each removal.",
   "creators": [
     {
       "name": "de Silva, Jayath",
@@ -15,13 +15,14 @@
   "language": "eng",
   "keywords": [
     "autonomous agents",
+    "agent payments",
+    "x402",
     "payment authorization",
     "policy attribution",
     "conformance testing",
     "adversarial benchmarking",
-    "stablecoins",
-    "x402",
-    "AI agent governance"
+    "agent gateways",
+    "stablecoins"
   ],
   "related_identifiers": [
     {
@@ -35,5 +36,5 @@
       "resource_type": "software"
     }
   ],
-  "notes": "Preprint draft. Not peer reviewed. Measured figures resolve to sealed experiment records EXP-007 to EXP-010 in github.com/tesoro-labs/aegs; their limitations apply."
+  "notes": "Preprint draft v0.2. Not peer reviewed. Measured figures resolve to sealed experiment records EXP-007 to EXP-010 in github.com/tesoro-labs/aegs or to redteam/baseline.json in github.com/tesoro-labs/tesoro; their limitations apply. Drafting and figures used an AI assistant; the author checked every claim and source."
 }

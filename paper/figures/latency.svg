@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 260" width="760" height="260" role="img" aria-labelledby="fig-latency-title fig-latency-desc">
+<title id="fig-latency-title">Ten runs of one latency measurement</title>
+<desc id="fig-latency-desc">Dot plot of p50 decision latency over ten identical runs, 139 to 330 microseconds, with an earlier single-run figure of 128 microseconds below all of them.</desc>
+<defs>
+<marker id="fig-latency-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#4f5d75"/></marker>
+<marker id="fig-latency-arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#bf4520"/></marker>
+</defs>
+<rect width="100%" height="100%" fill="#ffffff"/>
+<text x="30" y="22" fill="#4f5d75" font-size="8" font-family="'Cascadia Mono', Consolas, ui-monospace, Menlo, monospace" font-weight="400" text-anchor="start" letter-spacing="0.14em">p50 DECISION LATENCY, TEN IDENTICAL RUNS (EXP-007), MICROSECONDS</text>
+<line x1="120" y1="180" x2="720" y2="180" stroke="#1f2430" stroke-width="1"/>
+<line x1="120.0" y1="180" x2="120.0" y2="185" stroke="#1f2430" stroke-width="1"/>
+<text x="120.0" y="198" fill="#4f5d75" font-size="9" font-family="'Cascadia Mono', Consolas, ui-monospace, Menlo, monospace" font-weight="400" text-anchor="middle">100 µs</text>
+<line x1="240.0" y1="180" x2="240.0" y2="185" stroke="#1f2430" stroke-width="1"/>
+<text x="240.0" y="198" fill="#4f5d75" font-size="9" font-family="'Cascadia Mono', Consolas, ui-monospace, Menlo, monospace" font-weight="400" text-anchor="middle">150 µs</text>
+<line x1="360.0" y1="180" x2="360.0" y2="185" stroke="#1f2430" stroke-width="1"/>
+<text x="360.0" y="198" fill="#4f5d75" font-size="9" font-family="'Cascadia Mono', Consolas, ui-monospace, Menlo, monospace" font-weight="400" text-anchor="middle">200 µs</text>
+<line x1="480.0" y1="180" x2="480.0" y2="185" stroke="#1f2430" stroke-width="1"/>
+<text x="480.0" y="198" fill="#4f5d75" font-size="9" font-family="'Cascadia Mono', Consolas, ui-monospace, Menlo, monospace" font-weight="400" text-anchor="middle">250 µs</text>
+<line x1="600.0" y1="180" x2="600.0" y2="185" stroke="#1f2430" stroke-width="1"/>
+<text x="600.0" y="198" fill="#4f5d75" font-size="9" font-family="'Cascadia Mono', Consolas, ui-monospace, Menlo, monospace" font-weight="400" text-anchor="middle">300 µs</text>
+<line x1="720.0" y1="180" x2="720.0" y2="185" stroke="#1f2430" stroke-width="1"/>
+<text x="720.0" y="198" fill="#4f5d75" font-size="9" font-family="'Cascadia Mono', Consolas, ui-monospace, Menlo, monospace" font-weight="400" text-anchor="middle">350 µs</text>
+<line x1="283.2" y1="56" x2="283.2" y2="118" stroke="#4f5d75" stroke-width="1" stroke-dasharray="4,3"/>
+<text x="289.2" y="64" fill="#4f5d75" font-size="9" font-family="'Cascadia Mono', Consolas, ui-monospace, Menlo, monospace" font-weight="400" text-anchor="start">median 168 µs</text>
+<text x="108" y="104" fill="#1f2430" font-size="12" font-family="'Segoe UI', system-ui, -apple-system, Helvetica, Arial, sans-serif" font-weight="600" text-anchor="end">ten runs</text>
+<circle cx="213.6" cy="100" r="5" fill="#4f5d75"/>
+<circle cx="232.8" cy="100" r="5" fill="#4f5d75"/>
+<circle cx="249.6" cy="100" r="5" fill="#4f5d75"/>
+<circle cx="278.4" cy="100" r="5" fill="#4f5d75"/>
+<circle cx="280.8" cy="88" r="5" fill="#4f5d75"/>
+<circle cx="285.6" cy="76" r="5" fill="#4f5d75"/>
+<circle cx="302.4" cy="100" r="5" fill="#4f5d75"/>
+<circle cx="369.6" cy="100" r="5" fill="#4f5d75"/>
+<circle cx="554.4" cy="100" r="5" fill="#4f5d75"/>
+<circle cx="672.0" cy="100" r="5" fill="#4f5d75"/>
+<text x="108" y="154" fill="#1f2430" font-size="12" font-family="'Segoe UI', system-ui, -apple-system, Helvetica, Arial, sans-serif" font-weight="600" text-anchor="end">one earlier run</text>
+<circle cx="187.2" cy="150" r="5.5" fill="#bf4520"/>
+<text x="199.2" y="154" fill="#bf4520" font-size="9" font-family="'Cascadia Mono', Consolas, ui-monospace, Menlo, monospace" font-weight="400" text-anchor="start">128 µs, single run: below the minimum of all ten</text>
+<text x="380" y="236" fill="#1f2430" font-size="13" font-family="Charter, 'Bitstream Charter', Georgia, Cambria, serif" font-weight="400" text-anchor="middle" font-style="italic">Fastest and slowest of ten identical runs differ 2.37×. One laptop, shared with other work.</text>
+</svg>
