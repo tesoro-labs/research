@@ -1,0 +1,39 @@
+{
+  "title": "Which control decided? Required attribution in pre-execution payment governance",
+  "upload_type": "publication",
+  "publication_type": "preprint",
+  "description": "Autonomous agents can now initiate payments on settlement rails that do not govern the payer, and several systems published in 2026 place a deterministic decision before an agent's action. We do not propose another. We argue that this category, which already has independent implementations, is missing one property, and we say precisely what it costs to require it.  Under narrowing-only composition — where each control may make a verdict stricter and never more permissive — the final verdict is the join of all proposals and is therefore independent of evaluation order. **The attributed control is not.** We show that the last control to narrow is the first control in the evaluation order attaining the maximum severity, and hence that attribution depends on order *if and only if more than one control attains that maximum*. Ties are the common case rather than a corner: any two categorical refusals collide at the top of the lattice by construction. A specification that requires attribution must therefore make evaluation order normative, and must supply structure outside the lattice — declared dispositive controls — to resolve the ties the ordering alone cannot.  We make three contributions, and they are small. First, attribution as a **required and independently conformance-scorable** output: named on permit as well as on refusal, with precedence fixed in advance, checkable by a third party holding only machine-readable vectors. Second, **\"bounded, not eliminated\" as a disclosure obligation** — a normative requirement that an implementation state the residual its control leaves behind, with two worked cases. Third, a benchmark scoring rule, `DEFENDED_BY_ACCIDENT`, which counts *refused by a control the attack does not target* as a finding rather than a pass.  We report the reference implementation's results honestly: 20 adversarial attacks, 17 defended, one defended by accident, two open by design. We also report that the instrument has no benign scenarios, so an implementation refusing everything would score perfectly — a defect we found by reading a competitor's design rather than by testing our own. Three prior-art surveys removed three larger claims during preparation, including one we invented and withdrew within a day, and §3 reports each removal.",
+  "creators": [
+    {
+      "name": "de Silva, Jayath",
+      "orcid": "0009-0007-1855-4158",
+      "affiliation": "Independent"
+    }
+  ],
+  "license": "cc-by-4.0",
+  "access_right": "open",
+  "language": "eng",
+  "keywords": [
+    "autonomous agents",
+    "payment authorization",
+    "policy attribution",
+    "conformance testing",
+    "adversarial benchmarking",
+    "stablecoins",
+    "x402",
+    "AI agent governance"
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "https://github.com/tesoro-labs/aegs",
+      "relation": "references",
+      "resource_type": "publication-standard"
+    },
+    {
+      "identifier": "https://github.com/tesoro-labs/tesoro",
+      "relation": "references",
+      "resource_type": "software"
+    }
+  ],
+  "notes": "Preprint draft. Not peer reviewed. Measured figures resolve to sealed experiment records EXP-007 to EXP-010 in github.com/tesoro-labs/aegs; their limitations apply."
+}

@@ -1,0 +1,17 @@
+cff-version: 1.2.0
+message: "If you cite this work, please cite it as below."
+type: article
+title: "Which control decided? Required attribution in pre-execution payment governance"
+authors:
+  - family-names: "de Silva"
+    given-names: "Jayath"
+    orcid: "https://orcid.org/0009-0007-1855-4158"
+    affiliation: "Independent"
+license: CC-BY-4.0
+repository-code: "https://github.com/tesoro-labs/research"
+keywords:
+  - autonomous agents
+  - payment authorization
+  - policy attribution
+  - conformance testing
+  - x402

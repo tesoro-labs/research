@@ -1,6 +1,6 @@
 # Which control decided? Required attribution in pre-execution payment governance
 
-**Jayzilva** · Independent · 30 August 2026
+**Jayath de Silva** ([ORCID 0009-0007-1855-4158](https://orcid.org/0009-0007-1855-4158)) · Independent · Draft v0.1, October 2026
 
 > **Preprint draft.** Complete in ten sections. Not peer reviewed, and not yet read by anyone who
 > did not write it — which is also, as §10 argues, the paper's own open question.
@@ -727,7 +727,6 @@ more of it rather than less.
 Marked by how each was consulted, because the paper argues that provenance should be visible and it
 would be strange to exempt its own bibliography. **`[read]`** — the source text was retrieved and
 read. **`[secondary]`** — consulted through summaries or through another paper's description.
-**`[unverified]`** — recalled, and the citation itself needs checking before submission.
 
 **[1]** `[read]` U. Uchibeke. *Before the Tool Call: Deterministic Pre-Action Authorization for
 Autonomous AI Agents.* APort Technologies, arXiv:2603.20953, March 2026. CC BY 4.0. Specification
@@ -768,19 +767,23 @@ guideline, which is an implementation profile of ISO 20022 rather than the stand
 documentation rather than the standard text; the absence of an initiating-party element in §2.1 is
 stated on that basis.*
 
-**[9]** `[unverified]` A. Birgisson, J. G. Politz, Ú. Erlingsson, A. Taly, M. Vrable, M. Lentczner.
-*Macaroons: Cookies with Contextual Caveats for Decentralized Authorization in the Cloud.* NDSS 2014.
-**Venue, author list and title recalled and not verified.** The caveat-attenuation property this
-paper concedes to it is not in doubt; the citation is.
+**[9]** `[read]` A. Birgisson, J. G. Politz, Ú. Erlingsson, A. Taly, M. Vrable, M. Lentczner.
+*Macaroons: Cookies with Contextual Caveats for Decentralized Authorization in the Cloud.* Network and
+Distributed System Security Symposium (NDSS), 2014. DOI 10.14722/ndss.2014.23212. *Retrieved and read
+2026-10-24; title, authors and the attenuation property ("caveats that attenuate and contextually
+confine") verified in the paper's text. The DOI printed in the NDSS PDF header, 10.14722/ndss.2014.23208,
+resolves to a different paper; the one given here was checked at doi.org.*
 
-**[10]** `[unverified]` C. Ellison et al. *SPKI Certificate Theory*, RFC 2693, and the SPKI/SDSI
-certificate-chain reduction literature, 1996 onward. **Recalled.** The claim §3.3 draws from it — a
-reduction algorithm computing effective authority through a delegation chain — was read in secondary
-descriptions, not in the RFC.
+**[10]** `[read]` C. Ellison, B. Frantz, B. Lampson, R. Rivest, B. Thomas, T. Ylonen. *SPKI
+Certificate Theory.* RFC 2693, Experimental, September 1999. *Retrieved and read 2026-10-24. The claim
+§3.3 draws from it is in §6.3: two 5-tuples reduce to one whose authorization is
+`AIntersect(A1, A2)` and whose validity is `VIntersect(V1, V2)` — effective authority through a
+delegation chain is the intersection, which is the clamp this paper concedes.*
 
-**[11]** `[unverified]` B. Laurie, A. Langley, E. Kasper. *Certificate Transparency*, RFC 6962, 2013.
-**Recalled.** The signed-tree-head `(length, head)` commitment that §3.4 concedes the anchoring
-mechanism to is not in doubt; the citation details are.
+**[11]** `[read]` B. Laurie, A. Langley, E. Kasper. *Certificate Transparency.* RFC 6962,
+Experimental, June 2013. *Retrieved and read 2026-10-24; the signed tree head of §3.5 signs
+`tree_size` and `sha256_root_hash` — the `(length, head)` commitment §3.4 concedes the anchoring
+mechanism to.*
 
 **[12]** `[secondary]` OASIS. *eXtensible Access Control Markup Language (XACML) Version 3.0*, 2013.
 *The optional `PolicyIdentifierList` in a response is the basis of §3.2 and was read in secondary
@@ -812,8 +815,8 @@ structure, credited as its analysis rather than presented as ours.
 
 ### A note on this bibliography
 
-**Seven of seventeen entries are marked `[read]`.** Three are `[unverified]` and would be checked
-before submission; the rest were consulted at one remove.
+**Ten of seventeen entries are marked `[read]`.** The rest were consulted at one remove, and each
+says how.
 
 Entry `[2]` moved from `[secondary]` to `[read]` on 2026-08-30, and the move changed §3.1 rather
 than merely upgrading a label — which is the argument for retrieving sources you have only heard
@@ -824,7 +827,7 @@ decided, and its method section claims that a source able to kill or save a clai
 own text. A bibliography that presented all seventeen as equally consulted would contradict both
 positions on the last page.
 
-The three `[unverified]` entries share a property worth stating: **in each case the technical claim
-the paper concedes to that work is not in doubt** — macaroons attenuate, CT commits to a tree head,
-SPKI reduces a chain. It is the citation metadata that is unchecked, and the concession stands
-either way.
+Entries `[9]`–`[11]` moved from `[unverified]` to `[read]` on 2026-10-24. Each concession stood —
+macaroons attenuate, CT commits to a tree head, SPKI reduces a chain by intersection — and checking
+them still found something: the DOI printed on the Macaroons paper's own first page points at a
+different paper. A citation copied from the source is not thereby a checked citation.
