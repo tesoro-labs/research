@@ -8,6 +8,9 @@ authors:
     orcid: "https://orcid.org/0009-0007-1855-4158"
     affiliation: "Independent"
 license: CC-BY-4.0
+doi: "10.5281/zenodo.23610076"
+version: "paper-v0.1"
+date-released: "2026-10-24"
 repository-code: "https://github.com/tesoro-labs/research"
 keywords:
   - autonomous agents
