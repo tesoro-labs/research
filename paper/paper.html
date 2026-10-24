@@ -4,8 +4,8 @@
   <meta charset="utf-8" />
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <title>Which control decided? Required attribution in pre-execution
-payment governance</title>
+  <title>Same verdict, different culprit: which control decided?
+Attribution and enforcement points for AI agent payments</title>
   <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -21,6 +21,71 @@ margin: 0 0.8em 0.2em -1.6em;
 vertical-align: middle;
 }
 .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
 </style>
   <style type="text/css">@page { size: A4; margin: 22mm 20mm 22mm 20mm; }
 html { font-size: 10.5pt; }
@@ -65,19 +130,27 @@ td, th { font-size: 0.92em; }
 </head>
 <body>
 <header id="title-block-header">
-<h1 class="title">Which control decided? Required attribution in
-pre-execution payment governance</h1>
+<h1 class="title">Same verdict, different culprit: which control
+decided? Attribution and enforcement points for AI agent payments</h1>
 </header>
-<h1 id="which-control-decided-required-attribution-in-pre-execution-payment-governance">Which
-control decided? Required attribution in pre-execution payment
-governance</h1>
+<h1 id="same-verdict-different-culprit">Same verdict, different
+culprit</h1>
+<h3 id="which-control-decided-attribution-and-enforcement-points-for-ai-agent-payments">Which
+control decided? Attribution and enforcement points for AI agent
+payments</h3>
 <p><strong>Jayath de Silva</strong> (<a href="https://orcid.org/0009-0007-1855-4158">ORCID
-0009-0007-1855-4158</a>) · Independent · Draft v0.2, October 2026</p>
+0009-0007-1855-4158</a>) · Independent · Draft v0.3, October 2026</p>
 <blockquote>
 <p><strong>Preprint draft.</strong> Not peer reviewed, and not yet read
-by anyone who did not write it. §11 argues that this is the paper&#39;s own
-open question.</p>
+by anyone who did not write it. Section 11 argues that this is the
+paper&#39;s own open question.</p>
 </blockquote>
+<p><strong>Links.</strong> Paper: <a href="https://doi.org/10.5281/zenodo.23610076">DOI
+10.5281/zenodo.23610076</a> (all versions) · Source and figures: <a href="https://github.com/tesoro-labs/research">github.com/tesoro-labs/research</a>
+· Reference implementation: <a href="https://github.com/tesoro-labs/tesoro">tesoro</a>
+(<code>pip install tesoro</code>) · Standard, vectors and conformance
+suite: <a href="https://github.com/tesoro-labs/aegs">AEGS</a> · Try
+every claim yourself: <a href="#appendix-a--try-it-and-check-our-numbers">Appendix A</a>.</p>
 <h2 id="abstract">Abstract</h2>
 <p>AI agents can now pay for things on their own, over settlement rails
 that do not govern the payer. Several systems published in 2026 put a
@@ -101,19 +174,19 @@ eliminated</em>, which obliges an implementation to state what its
 control leaves behind. And a benchmark scoring rule,
 <code>DEFENDED_BY_ACCIDENT</code>, which counts an attack refused by a
 control that was not aiming at it as a finding rather than a pass.</p>
-<p>Version 0.2 adds a map of where such a control can sit on an x402
-payment (a pre-tool hook, the client&#39;s spend controls, a custodial
-signer, an agent gateway, the seller, the facilitator) and what each
-position can and cannot see. A pre-tool hook decides before the seller
-has named a price. A gateway sees the signed amount but cannot revoke
-it. No position holds an independent view of what the price should have
+<p>The paper also maps where such a control can sit on an x402 payment
+(a pre-tool hook, the client&#39;s spend controls, a custodial signer, an
+agent gateway, the seller, the facilitator) and what each position can
+and cannot see. A pre-tool hook decides before the seller has named a
+price. A gateway sees the signed amount but cannot revoke it. No
+position holds an independent view of what the price should have
 been.</p>
 <p>The reference implementation scores 17 of 20 attacks defended, one by
 accident and two open by design. The instrument has no benign scenarios,
 so an implementation that refused everything would score perfectly; we
 found that defect by reading a competitor&#39;s design. Three prior-art
-surveys removed three larger claims while we wrote this, and §3 reports
-each removal.</p>
+surveys removed three larger claims while we wrote this, and Section 3
+reports each removal.</p>
 <p><strong>Keywords:</strong> autonomous agents, agent payments, x402,
 payment authorization, policy attribution, conformance testing,
 adversarial benchmarking, agent gateways, stablecoins.</p>
@@ -159,15 +232,98 @@ output.</strong> The record names the control that decided, on approvals
 as well as refusals. When several controls would have refused, the rule
 for which one is named is fixed in advance. Requiring this forces a
 normative evaluation order, even though the verdict itself does not
-depend on order (§5).</li>
+depend on order (Section 5).</li>
 <li><strong>&quot;Bounded, not eliminated&quot; as a disclosure
 obligation.</strong> Where a control limits a risk without removing it,
 the specification makes the implementation say so, and a conformance
-vector checks the statement (§7).</li>
+vector checks the statement (Section 7).</li>
 <li><strong>A scoring rule, <code>DEFENDED_BY_ACCIDENT</code>.</strong>
 In an adversarial benchmark of a control layer, an attack refused by a
-control it was not aimed at counts as a finding (§6).</li>
+control it was not aimed at counts as a finding (Section 6).</li>
 </ol>
+<h3 id="what-is-new-here-and-what-is-not">What is new here, and what is
+not</h3>
+<p>Most of this layer is not new, and the claims only hold up if that is
+said first.</p>
+<table>
+<thead>
+<tr>
+<th>Already known, and conceded</th>
+<th>Where it comes from</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A deterministic check before an agent acts</td>
+<td>OAP [1], PCAS [2], card authorization (ISO 8583)</td>
+</tr>
+<tr>
+<td>Delegated authority that can only narrow</td>
+<td>SPKI/SDSI [10], macaroons [9], Intent-Driven Computing&#39;s Coq proof
+[3]</td>
+</tr>
+<tr>
+<td>A hash-chained journal with an external anchor</td>
+<td>Certificate Transparency [11]</td>
+</tr>
+<tr>
+<td>Policy as data, not code</td>
+<td>XACML [12], OPA, Cedar</td>
+</tr>
+<tr>
+<td>Spending limits per period, per merchant</td>
+<td>card programmes; per-payment caps in the x402 client [18]; session
+budgets in AWS AgentCore Payments [23]</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Claimed here</th>
+<th>Closest prior art</th>
+<th>What that prior art does not do</th>
+<th>Shown in</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>The record must name the control that decided, on approvals as well
+as refusals, with precedence fixed in advance</td>
+<td>OAP reason codes (refusals only); XACML&#39;s optional
+<code>PolicyIdentifierList</code></td>
+<td>require it, fix which control is named on a tie, or make it
+checkable by a third party</td>
+<td>Sections 3.5, 5</td>
+</tr>
+<tr>
+<td>Attribution depends on evaluation order exactly when two controls
+tie at the strictest verdict</td>
+<td>proofs that narrowing composes [3]</td>
+<td>state that the verdict is order-free while the attribution is
+not</td>
+<td>Section 5.1, <a href="https://github.com/tesoro-labs/research/blob/main/lattice.md"><code>lattice.md</code></a></td>
+</tr>
+<tr>
+<td>A control that bounds a risk must say so, and a vector scores the
+admission</td>
+<td>standards that specify what a control does</td>
+<td>require a statement of what it leaves behind</td>
+<td>Section 7</td>
+</tr>
+<tr>
+<td><code>DEFENDED_BY_ACCIDENT</code>: a refusal by a control the attack
+did not target is a finding</td>
+<td>PayBench&#39;s trap and lookalike pairs [4]; OAP&#39;s capture-the-flag
+[1]</td>
+<td>ask whether the refusing control was the one aimed at the
+attack</td>
+<td>Section 6</td>
+</tr>
+</tbody>
+</table>
+<p><em>Table 0. What this paper concedes and what it claims. Section 3
+gives the reading behind each row.</em></p>
 <p>Section 8 adds an analysis we do not claim as a contribution: where
 on the payment path such a control can sit, and what each position can
 see.</p>
@@ -198,8 +354,8 @@ happens.</p>
 payment on an irreversible rail means the principal does not get what
 they wanted, and there is no dispute process to fix it later. That works
 against the instinct to refuse whenever in doubt. It is why the
-benchmark in §6 should treat over-refusal as a defect, and why §10
-reports that our own instrument cannot measure it.</p>
+benchmark in Section 6 should treat over-refusal as a defect, and why
+Section 10 reports that our own instrument cannot measure it.</p>
 <p>The early check pays for being early. It decides on less information
 than a later one would have. It cannot see whether the goods arrived,
 whether the counterparty later turned out to be a fraud, or whether the
@@ -223,9 +379,9 @@ structured reason code such as <code>oap.limit_exceeded</code> or
 tested against 4,437 adversarial decisions across 1,151 attack sessions
 in a live capture-the-flag against a banking agent, with outside
 participants.</p>
-<p>That last number beats anything we report, on the axis §10 names as
-our weakest. Our attacks were written by the author of the system under
-test, and OAP&#39;s were not.</p>
+<p>That last number beats anything we report, on the axis Section 10
+names as our weakest. Our attacks were written by the author of the
+system under test, and OAP&#39;s were not.</p>
 <p>OAP&#39;s limitations section records that it does not yet formalise a
 delegation model (<em>&quot;planned for v1.1&quot;</em>), that its
 <code>ESCALATE</code> path is specified but not implemented in the
@@ -265,7 +421,7 @@ policy and recovering.</p>
 [12], so &quot;which policy decided&quot; has been expressible in a standard from
 that lineage for twenty years. OPA and Cedar are the current form of
 policy as data. Our claim is therefore not that attribution was
-impossible to express. §3.5 says what is left.</p>
+impossible to express. Section 3.5 says what is left.</p>
 <h3 id="33-capability-security-and-the-claim-it-removed">3.3 Capability
 security, and the claim it removed</h3>
 <p>SPKI/SDSI [10] reduces a chain of delegation certificates to one
@@ -343,15 +499,15 @@ policy identifier without requiring one.</p>
 <td>no</td>
 <td>no</td>
 <td>no</td>
-<td>§5</td>
+<td>Section 5</td>
 </tr>
 </tbody>
 </table>
 <p><em>Table 1. What surveyed systems require of the decision record, as
 read from their published material; the card column follows the
-description of ISO 8583 in §4 and is not separately cited. &quot;No&quot; means we
-found no such requirement, which is weaker than finding it absent by
-design.</em></p>
+description of ISO 8583 in Section 4 and is not separately cited. &quot;No&quot;
+means we found no such requirement, which is weaker than finding it
+absent by design.</em></p>
 <p>Those four requirements, plus the order argument behind them, are
 claim 1.</p>
 <h3 id="36-what-we-did-not-survey">3.6 What we did not survey</h3>
@@ -377,7 +533,7 @@ still sit in the system as an adviser that may tighten a verdict and may
 never loosen one, which keeps the decision reproducible while letting
 judgement make it stricter.</p>
 <p><em>Attributable</em> means the record names the control that
-produced the verdict. §5 works out what that costs.</p>
+produced the verdict. Section 5 works out what that costs.</p>
 <p><em>Before execution</em> means the verdict arrives while refusing is
 still free. Afterwards a control can only describe.</p>
 <p><em>Evidence sufficient to reconstruct</em> means enough state to
@@ -407,8 +563,8 @@ different audience. The layer described here shows a seller a strict
 subset of the record, and that subset never says which control
 decided.</p>
 <hr />
-<h2 id="5--same-verdict-different-culprit">5 · Same verdict, different
-culprit</h2>
+<h2 id="5--why-attribution-forces-an-evaluation-order">5 · Why
+attribution forces an evaluation order</h2>
 <p>This is the paper&#39;s main claim, and it comes down to one observation
 about systems whose controls can only tighten a verdict.</p>
 <h3 id="51-order-does-not-change-the-verdict-it-changes-the-record">5.1
@@ -419,8 +575,8 @@ stricter and never more permissive. Rank the verdicts by severity:
 <code>REJECT</code>.</p>
 <p>The final verdict is then the most severe one any control proposed.
 Taking a maximum is commutative and associative, so the final verdict
-does not depend on the order the controls ran in. Every system in §3 has
-some version of this property.</p>
+does not depend on the order the controls ran in. Every system in
+Section 3 has some version of this property.</p>
 <p>Now ask which control decided. Define the attributed control as the
 last control that tightened the verdict. This is well defined because
 loosening is impossible, so a control proposing something no stricter
@@ -503,9 +659,9 @@ rather than on its having changed the outcome. A control that stays
 silent when it did not tighten anything cannot be dispositive.</p>
 <h3 id="54-naming-the-control-behind-an-approval">5.4 Naming the control
 behind an approval</h3>
-<p>Every system in §3 that attributes at all attributes refusals, which
-is the natural place to start: somebody is inconvenienced and wants an
-explanation.</p>
+<p>Every system in Section 3 that attributes at all attributes refusals,
+which is the natural place to start: somebody is inconvenienced and
+wants an explanation.</p>
 <p>The approval record is more useful. <em>&quot;This payment was approved,
 and the control that let it through was the budget envelope with $12.40
 of headroom&quot;</em> answers a question no refusal record can: would
@@ -524,7 +680,7 @@ anybody can:</p>
 invisible to every audit. A third party can run this check with only the
 record format and a set of vectors, without access to the implementation
 or help from its author. That is what &quot;independently scored&quot; means here,
-and it is the part §3.5 found unclaimed.</p>
+and it is the part Section 3.5 found unclaimed.</p>
 <hr />
 <h2 id="6--counting-lucky-refusals-as-findings">6 · Counting lucky
 refusals as findings</h2>
@@ -565,12 +721,13 @@ return-on-investment rule that happened to fire is refused today, and
 may not be after somebody retunes an unrelated weight. Nothing in the
 record will show a regression, because nothing that was ever asserted
 stopped being true.</p>
-<p>Attribution (§5) is what makes this outcome visible. Without a record
-naming the control that refused, an accidental defence and a deliberate
-one look the same from outside.</p>
-<p>None of the systems in §3 has this outcome. OAP records a deny code
-but does not ask whether it was the code aimed at the attack. PayBench
-scores whether a refusal was appropriate, not where it came from.</p>
+<p>Attribution (Section 5) is what makes this outcome visible. Without a
+record naming the control that refused, an accidental defence and a
+deliberate one look the same from outside.</p>
+<p>None of the systems in Section 3 has this outcome. OAP records a deny
+code but does not ask whether it was the code aimed at the attack.
+PayBench scores whether a refusal was appropriate, not where it came
+from.</p>
 <p>The newest attacks found a defect. Two advisor attacks were added in
 August 2026, both assuming a counterparty&#39;s text completely takes over
 the advisory model. The first confirmed the clamp holds. The second had
@@ -602,8 +759,8 @@ record, EXP-010 [15], covers the first eighteen attacks (15 / 1 / 2 /
 0); the two advisor attacks are in the baseline file but not yet in a
 sealed record. Version 0.1 of this paper said the twenty-attack score
 was in a sealed record, which was not accurate.</p>
-<p>Three properties of the instrument belong here rather than in
-§10.</p>
+<p>Three properties of the instrument belong here rather than in Section
+10.</p>
 <p>It is small, and nobody outside attacked it. OAP&#39;s capture-the-flag
 produced 4,437 adversarial decisions across 1,151 sessions with outside
 participants. Ours has twenty attacks, all written by the author of the
@@ -612,12 +769,13 @@ system under test.</p>
 lookalike, so an agent that refuses everything cannot score well. We
 have no such pairing. An implementation that refused all twenty attacks
 would score 20 out of 20, so the instrument does not measure
-over-refusal at all, which §2 argues is the expensive failure on an
-irreversible rail. We found this by reading a competitor&#39;s design.</p>
+over-refusal at all, which Section 2 argues is the expensive failure on
+an irreversible rail. We found this by reading a competitor&#39;s
+design.</p>
 <p>Two findings stay open. Structuring is bounded rather than refused,
-for reasons given in §7. Truncating the journal is caught only against
-an external anchor, and none ships by default, so the benchmark reports
-what an installer actually gets.</p>
+for reasons given in Section 7. Truncating the journal is caught only
+against an external anchor, and none ships by default, so the benchmark
+reports what an installer actually gets.</p>
 <h3 id="63-the-record-history-including-a-wrong-measurement">6.3 The
 record history, including a wrong measurement</h3>
 <p>The sealed records behind the score run EXP-008, then EXP-009, then
@@ -659,8 +817,8 @@ nowhere near 500 actions. The envelope limits the mechanism at a number
 the operator chose. It does not refuse this case, and it should not:
 forty small purchases in an afternoon is also what a legitimate agent
 does. Refusing it would be a false positive on an irreversible rail,
-which §2 counts as a real cost. The attack stays in the benchmark as
-<code>UNDEFENDED</code>.</p>
+which Section 2 counts as a real cost. The attack stays in the benchmark
+as <code>UNDEFENDED</code>.</p>
 <h3 id="72-anchoring-truncation-caught-beyond-a-bound-the-operator-chose">7.2
 Anchoring: truncation caught beyond a bound the operator chose</h3>
 <p>A hash chain catches edits, but it cannot catch someone cutting off
@@ -670,8 +828,8 @@ internal linking supplies it.</p>
 <p>An external anchor does: a commitment to the journal&#39;s length and
 head, published where the journal&#39;s writer cannot reach. This is
 Certificate Transparency&#39;s signed tree head [11] applied to a spending
-journal, and §3.4 records that the survey showing this refuted our
-novelty claim.</p>
+journal, and Section 3.4 records that the survey showing this refuted
+our novelty claim.</p>
 <p>The bound is the honest part. Anchors are published at some interval,
 so everything written since the last one can still be cut off without
 trace. Anchoring makes truncation detectable beyond a bound the operator
@@ -823,8 +981,8 @@ observability of agent payments [22]: <em>&quot;In theory I think this is in
 scope. … Especially with observability only I think it makes things much
 more viable.&quot;</em></p>
 <p>On a managed signer, AWS&#39;s documentation states the budget rule
-quoted in §8.1 [23]. It describes when payments are denied. In the
-documentation we read it does not describe a record of which limit
+quoted in Section 8.1 [23]. It describes when payments are denied. In
+the documentation we read it does not describe a record of which limit
 denied a payment.</p>
 <h3 id="83-gaps-no-single-position-closes">8.3 Gaps no single position
 closes</h3>
@@ -847,14 +1005,14 @@ settle, and a hook counts calls. After a failed settlement or a retry,
 the three totals differ. None of the surveyed systems says which one is
 authoritative or how they reconcile.</p>
 <p><strong>Attribution has to name the layer as well as the
-control.</strong> §5 showed that two controls in one layer can tie at
-<code>REJECT</code>, and that the record then needs a fixed rule for
-which one it names. Two layers that both refuse produce the same tie one
-level up. If the client&#39;s cap and the gateway&#39;s envelope would both have
-refused, a record that says only &quot;budget&quot; does not tell the operator
-which budget to change. Defence in depth multiplies these ties. We think
-the record should name the layer and the control, and we have not
-specified how.</p>
+control.</strong> Section 5 showed that two controls in one layer can
+tie at <code>REJECT</code>, and that the record then needs a fixed rule
+for which one it names. Two layers that both refuse produce the same tie
+one level up. If the client&#39;s cap and the gateway&#39;s envelope would both
+have refused, a record that says only &quot;budget&quot; does not tell the
+operator which budget to change. Defence in depth multiplies these ties.
+We think the record should name the layer and the control, and we have
+not specified how.</p>
 <p><strong>A refusal in transit does not revoke a signature.</strong>
 This is specific to positions 4 to 6, which act after signing. Bounding
 <code>validBefore</code> at the gateway would shorten the window in
@@ -927,7 +1085,8 @@ library skips, and that work is why someone would choose it.</p>
 payment need not cost a network round trip, and where the layer runs
 inside the agent&#39;s process it does not. Whether that is acceptable
 depends on whether the deployment can accept the trust that comes with
-running in the agent&#39;s process, which §8.1 and §10 leave open.</p>
+running in the agent&#39;s process, which Section 8.1 and Section 10 leave
+open.</p>
 <hr />
 <h2 id="10--limitations">10 · Limitations</h2>
 <p>This section collects the limitations of every sealed record cited,
@@ -937,13 +1096,14 @@ plus those of the work as a whole.</p>
 is the largest hole in the paper. An adversarial benchmark written by
 the defender measures what the defender thought to try, and nobody knows
 how well that matches what an attacker would try. OAP&#39;s capture-the-flag
-with outside participants is better on exactly this point (§3.1).</p>
+with outside participants is better on exactly this point (Section
+3.1).</p>
 <p>There are no benign twins, so over-refusal is not measured. An
 implementation that refused all twenty attacks would score 20 out of 20.
 PayBench&#39;s matched pairs exist to prevent that, and adopting them would
 change what our score means. Until then the score is an upper bound on
-defence and says nothing about false positives, which §2 argues is the
-expensive failure on an irreversible rail.</p>
+defence and says nothing about false positives, which Section 2 argues
+is the expensive failure on an irreversible rail.</p>
 <p>Twenty attacks is a small number, and the same author chose the five
 classes.</p>
 <p>The threat model is an adversarial agent, not an adversarial host,
@@ -960,7 +1120,7 @@ score. A threat model with an untrusted embedding process is reasonable
 (it is what a provider running someone else&#39;s agent would want), and it
 is not the one measured here.</p>
 <p>The twenty-attack score lives in a baseline file checked by a test.
-The last sealed record covers eighteen attacks (§6.2).</p>
+The last sealed record covers eighteen attacks (Section 6.2).</p>
 <h3 id="102-the-measurements">10.2 The measurements</h3>
 <p>One laptop, in use for other work, running Windows 11. The p50 varies
 2.37× across identical runs. No measurement was taken on server
@@ -974,30 +1134,31 @@ standard. A specification with one implementation describes that
 implementation, and nothing more that person does can change it. The
 vectors are machine-readable and the conformance suite installs
 separately so that a second implementation needs nobody&#39;s permission.
-Whether one appears is outside our control, and it is the question §11
-ends on.</p>
-<p>Four adjacent fields are unsurveyed (§3.6).</p>
+Whether one appears is outside our control, and it is the question
+Section 11 ends on.</p>
+<p>Four adjacent fields are unsurveyed (Section 3.6).</p>
 <h3 id="104-scope">10.4 Scope</h3>
 <p>Everything measured here is x402 with stablecoin settlement. The
 card, AP2 and bank bindings exist as specified shapes and are not
 implemented, so any claim of generality is untested.</p>
-<p>The placement analysis in §8 is a reading of documentation. Positions
-1, 3, 5 and 6 were not exercised in code by us. Position 4 was exercised
-by a spike policy run once against a mock seller, and by a successor
-policy that has been unit-tested and not yet run on a gateway.</p>
+<p>The placement analysis in Section 8 is a reading of documentation.
+Positions 1, 3, 5 and 6 were not exercised in code by us. Position 4 was
+exercised by a spike policy run once against a mock seller, and by a
+successor policy that has been unit-tested and not yet run on a
+gateway.</p>
 <p>Two red-team findings are open by design: structuring is bounded
-rather than refused (§7.1), and journal truncation is caught only
-against an external anchor, none of which ships (§7.2).</p>
+rather than refused (Section 7.1), and journal truncation is caught only
+against an external anchor, none of which ships (Section 7.2).</p>
 <p>No compliance with any framework is claimed. The obligations
-discussed in §2 and §4 fall on issuers, service providers and obliged
-institutions [16, 17]. The Travel Rule&#39;s required data names whose money
-moved and not who instructed the payment [5, 6], and the message formats
-that carry it either make an initiating party optional (pacs.008 [7]) or
-have no such element (IVMS101 [8]), so a payment an agent made leaves no
-trace of the agent in that record. The layer described here is a library
-and is none of those. It uses compliance signals and does not produce
-them: it performs no sanctions screening, holds no list, and implements
-no transfer-information protocol.</p>
+discussed in Section 2 and Section 4 fall on issuers, service providers
+and obliged institutions [16, 17]. The Travel Rule&#39;s required data names
+whose money moved and not who instructed the payment [5, 6], and the
+message formats that carry it either make an initiating party optional
+(pacs.008 [7]) or have no such element (IVMS101 [8]), so a payment an
+agent made leaves no trace of the agent in that record. The layer
+described here is a library and is none of those. It uses compliance
+signals and does not produce them: it performs no sanctions screening,
+holds no list, and implements no transfer-information protocol.</p>
 <p>The specification defines a vertical profile requiring a recorded AML
 position, and the reference implementation does not meet it, because it
 has no AML control and so emits no assessment. A profile the reference
@@ -1034,33 +1195,122 @@ use them.</p>
 <p>So the honest closing question is whether a governance standard can
 be validated by anyone other than its author, and we have no way to
 answer it from inside.</p>
-<p>The three surveys in §3 are the closest we have to an answer. Each
-removed a claim by consulting people who owed us nothing, and one
+<p>The three surveys in Section 3 are the closest we have to an answer.
+Each removed a claim by consulting people who owed us nothing, and one
 removed a claim we had invented that same day. That is what outside
 validation feels like from the receiving end, and it is why we want more
 of it.</p>
 <hr />
+<h2 id="appendix-a--try-it-and-check-our-numbers">Appendix A · Try it
+and check our numbers</h2>
+<p>Every command below was run from a clean virtual environment on 24
+October 2026 (Windows 11, Python 3.13) before this version was
+published.</p>
+<p><strong>Govern a payment and see which control decided</strong>
+(about five minutes):</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install tesoro                 <span class="co"># 0.1.3, pure Python, pulls only PyYAML</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">tesoro</span> init                        <span class="co"># writes tesoro.yaml and a starter policy pack</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="ex">tesoro</span> check                       <span class="co"># validates the config and the pack: prints &quot;ok&quot;</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="ex">tesoro</span> decide <span class="at">--amount</span> 900 <span class="at">--vendor</span> acme <span class="at">--resource</span> /market/snapshot</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="va">$?</span>                            <span class="co"># 2 = refused (0 approved, 1 invalid, 3 chain, 4 usage)</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="ex">tesoro</span> record <span class="at">--export</span> records.json</span></code></pre></div>
+<p>Each exported record is an AEGS Decision Record, and it names the
+control that decided:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;decision&quot;</span><span class="fu">:</span> <span class="st">&quot;REJECT&quot;</span><span class="fu">,</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;authorization&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;decidingEngine&quot;</span><span class="fu">:</span> <span class="st">&quot;treasury&quot;</span><span class="fu">,</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;matchedRule&quot;</span><span class="fu">:</span> <span class="st">&quot;deny-over-balance&quot;</span><span class="fu">,</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;deterministicVerdict&quot;</span><span class="fu">:</span> <span class="st">&quot;REJECT&quot;</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">}</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p>From Python, the same field is
+<code>decision.attributed_control</code>. Validating records against the
+schemas needs <code>pip install jsonschema</code>, which a plain install
+does not include.</p>
+<p><strong>Run the twenty-attack benchmark</strong> (Section 6):</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> clone https://github.com/tesoro-labs/tesoro <span class="kw">&amp;&amp;</span> <span class="bu">cd</span> tesoro</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> <span class="at">-m</span> redteam.runner           <span class="co"># defended 17   by accident 1   undefended 2   error 0</span></span></code></pre></div>
+<p><strong>Score an implementation with the conformance suite</strong>
+(Sections 5 and 11). The suite installs separately from what it tests
+and is not yet on PyPI:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install <span class="st">&quot;git+https://github.com/tesoro-labs/aegs&quot;</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="ex">aegs-conformance</span> <span class="at">--adapter</span> tesoro              <span class="co"># 7/7 passed; AEGS-1 and AEGS-2 claimable</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="ex">aegs-conformance</span> <span class="at">--against</span> your_module:YourAdapter   <span class="co"># score your own layer</span></span></code></pre></div>
+<p>Writing an adapter for another system takes two attributes and
+nothing to subclass; see <a href="https://github.com/tesoro-labs/aegs/blob/main/conformance/adapters/README.md"><code>conformance/adapters/README.md</code></a>.
+That is the run Section 11 asks for.</p>
+<p><strong>Rebuild this paper and its figures:</strong></p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> clone https://github.com/tesoro-labs/research <span class="kw">&amp;&amp;</span> <span class="bu">cd</span> research</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> paper/figures/make_figures.py   <span class="co"># figures from the sealed records and the baseline</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> paper/build.py                  <span class="co"># paper.html and paper.pdf (needs pandoc and Edge)</span></span></code></pre></div>
+<h3 id="artifacts">Artifacts</h3>
+<table>
+<thead>
+<tr>
+<th>What</th>
+<th>Where</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Reference implementation</td>
+<td><a href="https://github.com/tesoro-labs/tesoro">github.com/tesoro-labs/tesoro</a>
+· <a href="https://pypi.org/project/tesoro/">pypi.org/project/tesoro</a></td>
+</tr>
+<tr>
+<td>Benchmark baseline (twenty attacks)</td>
+<td><a href="https://github.com/tesoro-labs/tesoro/blob/main/redteam/baseline.json"><code>redteam/baseline.json</code></a></td>
+</tr>
+<tr>
+<td>Specification (95 clauses, CC BY 4.0)</td>
+<td><a href="https://github.com/tesoro-labs/aegs/tree/main/spec">github.com/tesoro-labs/aegs/tree/main/spec</a></td>
+</tr>
+<tr>
+<td>Conformance vectors (167) and suite</td>
+<td><a href="https://github.com/tesoro-labs/aegs/tree/main/vectors"><code>vectors/</code></a>
+· <a href="https://github.com/tesoro-labs/aegs/tree/main/conformance"><code>conformance/</code></a></td>
+</tr>
+<tr>
+<td>Sealed experiment records EXP-007 to EXP-010</td>
+<td><a href="https://github.com/tesoro-labs/aegs/tree/main/research/experiments"><code>research/experiments</code></a></td>
+</tr>
+<tr>
+<td>The lattice argument behind Section 5.1</td>
+<td><a href="https://github.com/tesoro-labs/research/blob/main/lattice.md"><code>lattice.md</code></a></td>
+</tr>
+<tr>
+<td>Paper source, figure generator, build</td>
+<td><a href="https://github.com/tesoro-labs/research/tree/main/paper">github.com/tesoro-labs/research/tree/main/paper</a></td>
+</tr>
+<tr>
+<td>Gateway policy (Section 8, position 4)</td>
+<td>not yet public; to be published once it has run end to end</td>
+</tr>
+</tbody>
+</table>
 <h2 id="disclosure">Disclosure</h2>
 <p>Drafting, editing and the figure generator were done with an AI
 assistant (Anthropic&#39;s Claude). Every claim, quotation, number and
 reference was checked by the author against the cited source or sealed
 record, and responsibility for all of it is the author&#39;s.</p>
-<h2 id="changes-from-version-01">Changes from version 0.1</h2>
-<ul>
-<li>§8 is new: where a control can sit on an x402 payment, what each
-position sees, public statements from people building in this space, and
-four gaps no single position closes.</li>
-<li>Four figures and two comparison tables added; prose rewritten for
-readability with the claims unchanged.</li>
-<li>§6.2 corrected: the twenty-attack score is in a baseline file
-checked by a test, not in a sealed record; the last sealed record covers
-eighteen attacks.</li>
-<li>References [9] to [11] verified against primary sources; references
-[18] to [25] added.</li>
-<li>Reference [14] updated to tesoro 0.1.3, the same code as 0.1.2. Its
-source distribution is on the GitHub release rather than PyPI, which
-refused the filename.</li>
-</ul>
+<h2 id="changes">Changes</h2>
+<p><strong>Version 0.3.</strong> New title, with the old one kept as the
+subtitle. Section numbers written as &quot;Section 5&quot; instead of with the
+section sign. Table 0, what is conceded and what is claimed, moved to
+the front. Links to every repository. Appendix A, with commands verified
+from a clean install.</p>
+<p><strong>Version 0.2.</strong> Section 8 is new: where a control can
+sit on an x402 payment, what each position sees, public statements from
+people building in this space, and four gaps no single position closes.
+Four figures and two comparison tables added, and the prose rewritten
+for readability with the claims unchanged. Section 6.2 corrected: the
+twenty-attack score is in a baseline file checked by a test, and the
+last sealed record covers eighteen attacks. References [9] to [11]
+verified against primary sources and [18] to [25] added. Reference [14]
+updated to tesoro 0.1.3, the same code as 0.1.2, whose source
+distribution is on the GitHub release because PyPI refused the
+filename.</p>
 <hr />
 <h2 id="references">References</h2>
 <p>Marked by how each was consulted, because the paper argues that
@@ -1072,14 +1322,15 @@ Tool Call: Deterministic Pre-Action Authorization for Autonomous AI
 Agents.</em> APort Technologies, arXiv:2603.20953, March 2026. CC BY
 4.0. Specification released under Apache 2.0, DOI
 10.5281/zenodo.18901596. <em>Retrieved and read in full; all quotations
-in §1, §3.1 and §5 verified against the PDF text.</em></p>
+in Section 1, Section 3.1 and Section 5 verified against the PDF
+text.</em></p>
 <p><strong>[2]</strong> <code>[read]</code> N. Palumbo, S. Choudhary, J.
 Choi, G. Amir, P. Chalasani, S. Jha. <em>Policy Compiler for Secure
 Agentic Systems.</em> University of Wisconsin–Madison, Cornell
 University, Langroid. arXiv:2602.16708, 2026. The system is named FORGE.
-<em>Retrieved and read 2026-08-30. Reading it changed §3.1: the paper
-attributes events to entities through a principal function, which is a
-different question from which control decided.</em></p>
+<em>Retrieved and read 2026-08-30. Reading it changed Section 3.1: the
+paper attributes events to entities through a principal function, which
+is a different question from which control decided.</em></p>
 <p><strong>[3]</strong> <code>[read]</code> <em>Intent-Driven Computing:
 A Computational Model for Governed Autonomous Systems.</em>
 arXiv:2605.24036, 2026. <em>Retrieved and read; the
@@ -1125,13 +1376,14 @@ paper; the one given here was checked at doi.org.</em></p>
 <p><strong>[10]</strong> <code>[read]</code> C. Ellison, B. Frantz, B.
 Lampson, R. Rivest, B. Thomas, T. Ylonen. <em>SPKI Certificate
 Theory.</em> RFC 2693, Experimental, September 1999. <em>Retrieved and
-read 2026-10-24. §6.3 reduces two 5-tuples to one whose authorization is
-<code>AIntersect(A1, A2)</code> and whose validity is
+read 2026-10-24. Section 6.3 reduces two 5-tuples to one whose
+authorization is <code>AIntersect(A1, A2)</code> and whose validity is
 <code>VIntersect(V1, V2)</code>.</em></p>
 <p><strong>[11]</strong> <code>[read]</code> B. Laurie, A. Langley, E.
 Kasper. <em>Certificate Transparency.</em> RFC 6962, Experimental, June
-2013. <em>Retrieved and read 2026-10-24; the signed tree head of §3.5
-signs <code>tree_size</code> and <code>sha256_root_hash</code>.</em></p>
+2013. <em>Retrieved and read 2026-10-24; the signed tree head of Section
+3.5 signs <code>tree_size</code> and
+<code>sha256_root_hash</code>.</em></p>
 <p><strong>[12]</strong> <code>[secondary]</code> OASIS. <em>eXtensible
 Access Control Markup Language (XACML) Version 3.0</em>, 2013. <em>The
 optional <code>PolicyIdentifierList</code> in a response was read in
@@ -1148,10 +1400,10 @@ including <code>redteam/baseline.json</code>. Apache 2.0.</p>
 <p><strong>[15]</strong> <code>[read]</code> Sealed experiment records
 EXP-007 to EXP-010,
 <code>github.com/tesoro-labs/aegs/tree/main/research/experiments</code>.
-Every measured figure in §6 and §9 resolves to one of these or to [14],
-each record carrying a checksum and its own limitations. EXP-009
-supersedes EXP-008 because a measurement in it was wrong; the superseded
-record is kept unedited.</p>
+Every measured figure in Section 6 and Section 9 resolves to one of
+these or to [14], each record carrying a checksum and its own
+limitations. EXP-009 supersedes EXP-008 because a measurement in it was
+wrong; the superseded record is kept unedited.</p>
 <p><strong>[16]</strong> <code>[secondary]</code> Financial Crimes
 Enforcement Network and Office of Foreign Assets Control. <em>Permitted
 Payment Stablecoin Issuer AML/CFT Program and Sanctions Compliance
@@ -1160,8 +1412,8 @@ Register, 10 April 2026. <em>Read through the Federal Register listing
 and published law-firm analyses; the NPRM itself was not read.</em></p>
 <p><strong>[17]</strong> <code>[secondary]</code> Sumsub. <em>Stablecoin
 compliance in 2026: which rules apply to your business.</em> The seven
-frameworks and six obliged-entity segments behind §2 and §4 are that
-document&#39;s structure.</p>
+frameworks and six obliged-entity segments behind Section 2 and Section
+4 are that document&#39;s structure.</p>
 <p><strong>[18]</strong> <code>[read]</code> x402 Foundation.
 <em>@x402/core client documentation: spend controls, payment policies
 and lifecycle hooks.</em> <code>github.com/x402-foundation/x402</code>,
@@ -1193,7 +1445,7 @@ date. <code>github.com/agentgateway/agentgateway/issues/3376</code>.</p>
 <p><strong>[23]</strong> <code>[read]</code> Amazon Web Services.
 <em>Amazon Bedrock AgentCore payments</em> (developer guide, preview).
 <code>docs.aws.amazon.com/bedrock-agentcore/latest/devguide/payments.html</code>.
-<em>Retrieved 2026-10-23; budget rule quoted in §8.1.</em></p>
+<em>Retrieved 2026-10-23; budget rule quoted in Section 8.1.</em></p>
 <p><strong>[24]</strong> <code>[read]</code> Anthropic. <em>Claude Code
 hooks reference.</em> <code>code.claude.com/docs/en/hooks</code>.
 <em>Retrieved 2026-10-24; <code>PreToolUse</code> fires before a tool
@@ -1210,9 +1462,9 @@ of running it.</em></p>
 <p>Nineteen of twenty-five entries are marked <code>[read]</code>. The
 rest were consulted at one remove, and each entry says how.</p>
 <p>Entry [2] moved from <code>[secondary]</code> to <code>[read]</code>
-in August 2026, and the move changed §3.1, which is the argument for
-retrieving sources you have only heard described. Entries [9] to [11]
-moved from unverified to <code>[read]</code> in October 2026. Each
+in August 2026, and the move changed Section 3.1, which is the argument
+for retrieving sources you have only heard described. Entries [9] to
+[11] moved from unverified to <code>[read]</code> in October 2026. Each
 concession stood, and checking them still found something: the DOI
 printed on the Macaroons paper&#39;s own first page points at a different
 paper. A citation copied from the source is not thereby a checked

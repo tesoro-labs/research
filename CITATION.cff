@@ -1,7 +1,7 @@
 cff-version: 1.2.0
 message: "If you cite this work, please cite it as below."
 type: article
-title: "Which control decided? Required attribution in pre-execution payment governance"
+title: "Same verdict, different culprit: which control decided? Attribution and enforcement points for AI agent payments"
 authors:
   - family-names: "de Silva"
     given-names: "Jayath"
@@ -9,7 +9,7 @@ authors:
     affiliation: "Independent"
 license: CC-BY-4.0
 doi: "10.5281/zenodo.23610076"
-version: "paper-v0.2"
+version: "paper-v0.3"
 date-released: "2026-10-24"
 repository-code: "https://github.com/tesoro-labs/research"
 keywords:

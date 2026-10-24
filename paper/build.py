@@ -25,7 +25,7 @@ CSS = HERE / "paper.css"
 HTML = HERE / "paper.html"
 PDF = HERE / "paper.pdf"
 
-TITLE = "Which control decided? Required attribution in pre-execution payment governance"
+TITLE = "Same verdict, different culprit: which control decided? Attribution and enforcement points for AI agent payments"
 
 EDGE_CANDIDATES = [
     r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
