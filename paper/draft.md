@@ -1,8 +1,8 @@
-# Same verdict, different culprit
+# Required attribution for pre-execution governance of AI agent payments (x402)
 
-### Which control decided? Attribution and enforcement points for AI agent payments
+### Same verdict, different culprit: which control decided, and where to enforce it
 
-**Jayath de Silva** ([ORCID 0009-0007-1855-4158](https://orcid.org/0009-0007-1855-4158)) · Independent · Draft v0.3, October 2026
+**Jayath de Silva** ([ORCID 0009-0007-1855-4158](https://orcid.org/0009-0007-1855-4158)) · Independent · Draft v0.4, October 2026
 
 > **Preprint draft.** Not peer reviewed, and not yet read by anyone who did not write it. Section 11
 > argues that this is the paper's own open question.
@@ -24,12 +24,15 @@ When controls can only make a verdict stricter, the final verdict is the stricte
 proposed, so the order the controls run in does not change it. The record of which control decided
 is a different matter. The last control to tighten the verdict is the first one in the order to
 reach the maximum, so attribution depends on order exactly when two or more controls reach that
-maximum. That happens all the time: any two outright refusals tie at the top. A specification that
-requires attribution therefore has to fix the evaluation order, and has to declare which controls
-win a tie.
+maximum. That happens all the time: any two outright refusals tie at the top. So a specification
+that requires attribution has to choose: fix the evaluation order, declare which controls win a tie,
+or record the full set of controls that reached the verdict. The set does not depend on order, and
+it names exactly the controls an operator must change before a refused payment can go through; it
+costs running every control after the outcome is already settled.
 
-We make three small contributions. Attribution as a required output that a third party can score
-from machine-readable vectors, on approvals as well as refusals. A disclosure rule we call *bounded,
+We make three contributions, each of which changes what a specification must say or what an audit
+can check. Attribution as a required output that a third party can score from machine-readable
+vectors, on approvals as well as refusals, with set-valued attribution as its order-free form. A disclosure rule we call *bounded,
 not eliminated*, which obliges an implementation to state what its control leaves behind. And a
 benchmark scoring rule, `DEFENDED_BY_ACCIDENT`, which counts an attack refused by a control that was
 not aiming at it as a finding rather than a pass.
@@ -83,9 +86,10 @@ should be obliged to produce, and shows that none of them is currently obliged t
 ### What we claim
 
 1. **Attribution as a required, independently scored output.** The record names the control that
-   decided, on approvals as well as refusals. When several controls would have refused, the rule for
-   which one is named is fixed in advance. Requiring this forces a normative evaluation order, even
-   though the verdict itself does not depend on order (Section 5).
+   decided, on approvals as well as refusals, and a third party can check it from vectors. Requiring
+   it forces a choice the verdict never did: fix the evaluation order, declare a precedence among
+   controls, or record the whole set of controls that reached the verdict. The set is order-free and
+   tells an operator what has to change; the price is evaluating every control (Section 5).
 2. **"Bounded, not eliminated" as a disclosure obligation.** Where a control limits a risk without
    removing it, the specification makes the implementation say so, and a conformance vector checks
    the statement (Section 7).
@@ -106,7 +110,7 @@ Most of this layer is not new, and the claims only hold up if that is said first
 
 | Claimed here | Closest prior art | What that prior art does not do | Shown in |
 |---|---|---|---|
-| The record must name the control that decided, on approvals as well as refusals, with precedence fixed in advance | OAP reason codes (refusals only); XACML's optional `PolicyIdentifierList` | require it, fix which control is named on a tie, or make it checkable by a third party | Sections 3.5, 5 |
+| The record must name the control that decided, on approvals as well as refusals, by fixed order, declared precedence or the full set | OAP reason codes (refusals only); XACML's optional `PolicyIdentifierList` | require it, fix which control is named on a tie, or make it checkable by a third party | Sections 3.5, 5 |
 | Attribution depends on evaluation order exactly when two controls tie at the strictest verdict | proofs that narrowing composes [3] | state that the verdict is order-free while the attribution is not | Section 5.1, [`lattice.md`](https://github.com/tesoro-labs/research/blob/main/lattice.md) |
 | A control that bounds a risk must say so, and a vector scores the admission | standards that specify what a control does | require a statement of what it leaves behind | Section 7 |
 | `DEFENDED_BY_ACCIDENT`: a refusal by a control the attack did not target is a finding | PayBench's trap and lookalike pairs [4]; OAP's capture-the-flag [1] | ask whether the refusing control was the one aimed at the attack | Section 6 |
@@ -116,9 +120,10 @@ Most of this layer is not new, and the claims only hold up if that is said first
 Section 8 adds an analysis we do not claim as a contribution: where on the payment path such a
 control can sit, and what each position can see.
 
-These claims are small on purpose. Three prior-art surveys each removed a larger claim, and one
-removed a claim we had invented that same day. We would rather defend three narrow points than spend
-a reviewer's afternoon on a fourth.
+Each claim is narrow, and each changes something concrete: what a specification has to state about
+order and precedence, what an auditor can conclude from a decision record, and what a benchmark
+score means. Three prior-art surveys each removed a broader claim, and one removed a claim we had
+invented that same day. The three here are the ones that survived.
 
 ---
 
@@ -200,6 +205,27 @@ budget constraints rather than enforcement. Faramesh is an execution-time contro
 ToolMisuseBench is an offline harness that separates failures in building a call from failures in
 handling policy and recovering.
 
+The Organizational Control Layer (OCL) [26] sits between an LLM agent's proposal and its execution
+and returns one of four outcomes, Approve, Revise, Block or Escalate. Its audit policy *"records
+proposed decisions, constraint checks, control outcomes, revisions, escalation reasons, and executed
+decisions."* It is the closest in shape to the definition in Section 4. As described, its record does
+not name which gate produced an outcome, and the paper does not say how the outcome is chosen when
+several constraints fire. Its evaluation is adversarial buyer and seller negotiation adapted from
+AgenticPay: unsafe executions fall from 88% to 0% over 50 adversarial profiles with one model
+backend, and there is no benign-only set, the same gap Section 6.2 reports in ours. It has no
+settlement and no payment rail. Its Revise outcome, which rewrites a proposal into a compliant one
+(for example clamping a price to a floor), is something a narrowing-only layer deliberately does not
+do, and whether a revision should itself be attributed is an open question this paper does not
+settle.
+
+Agent Control Protocol [27] scores sequences of agent actions with static risk and stateful anomaly
+signals for admission control; its abstract describes no record of which rule decided. A September
+2026 architecture for a "black box" of agent processes [28] anchors commitments to agent
+communications, approvals and tool calls on a blockchain, and lists which control or policy applied
+among the questions an auditor needs answered, without proposing a mechanism for it. That is the
+question the attribution requirement answers. Its anchoring is the mechanism Section 3.4 concedes to
+Certificate Transparency.
+
 ### 3.2 Policy languages
 
 An XACML 3.0 response may carry a `PolicyIdentifierList` [12], so "which policy decided" has been
@@ -233,13 +259,13 @@ that showed this refuted the novelty we had claimed, and the clause survives as 
 Every surveyed system that attributes at all attributes a refusal. OAP's reason codes attach to
 `DENY`, and XACML allows a policy identifier without requiring one.
 
-| What the record must do | OAP [1] | PCAS [2] | XACML [12] | Card authorization | This paper |
-|---|---|---|---|---|---|
-| Name the control behind a refusal | reason code on `DENY` | not asked | optional | decline code | required |
-| Name the control behind an approval | no | no | optional | no | required |
-| Fix which control is named when several refuse | no | no | no | issuer's choice | required |
-| Be scorable by a third party from vectors alone | no | no | no | no | required |
-| State that attribution depends on order | no | no | no | no | Section 5 |
+| What the record must do | OAP [1] | PCAS [2] | OCL [26] | XACML [12] | Card authorization | This paper |
+|---|---|---|---|---|---|---|
+| Name the control behind a refusal | reason code on `DENY` | not asked | outcome logged, gate not named | optional | decline code | required |
+| Name the control behind an approval | no | no | no | optional | no | required |
+| Fix which control is named when several refuse | no | no | not described | no | issuer's choice | required: order, precedence or set |
+| Be scorable by a third party from vectors alone | no | no | no | no | no | required |
+| State that attribution depends on order | no | no | no | no | no | Section 5 |
 
 *Table 1. What surveyed systems require of the decision record, as read from their published
 material; the card column follows the description of ISO 8583 in Section 4 and is not separately cited. "No"
@@ -343,9 +369,11 @@ Ties are the normal case. Any two outright refusals meet at the maximum: a barre
 exhausted budget and a revoked identity all produce `REJECT`.
 
 So the moment a specification requires attribution, it takes on an obligation the verdict never
-imposed: it has to say something binding about evaluation order. It cannot know in advance whether a
-given decision will have a tie at the top, so it has to fix the order for every decision. Order does
-not change what happens. It changes what the record says happened.
+imposed: it has to say how the record picks a name. It cannot know in advance whether a given
+decision will have a tie at the top, so whatever rule it chooses applies to every decision. There
+are three options: fix the evaluation order, declare a precedence among controls, or record every
+control that reached the maximum (Section 5.6). Order does not change what happens. Without one of
+these rules, it changes what the record says happened.
 
 We suspect this asymmetry is why no surveyed system requires attribution. The verdict is the part
 that matters operationally, the verdict does not care about order, and it is easy to conclude from
@@ -408,6 +436,57 @@ If not, the control was decorative, and removing it would be invisible to every 
 can run this check with only the record format and a set of vectors, without access to the
 implementation or help from its author. That is what "independently scored" means here, and it is
 the part Section 3.5 found unclaimed.
+
+### 5.6 Report the set instead of the winner
+
+Every rule so far picks one control. A record can instead carry the *attribution set*: every control
+whose proposal equals the final verdict,
+
+> A(d) = { c : proposal(c) = v\* }, where v\* is the final verdict of decision d.
+
+Three properties follow directly from narrowing-only composition.
+
+The set does not depend on evaluation order. The final verdict v\* does not, and whether a control
+proposed v\* is a fact about that control's inputs, not about when it ran. Recording the set removes
+the tie problem of Section 5.1 by construction.
+
+Every single-winner rule is a projection of the set. "First in evaluation order", the default of
+Section 5.1, picks a member of A(d) by position and is order-dependent. "Highest declared
+precedence", the dispositive rule of Section 5.2, picks a member by a fixed ranking of controls and
+is order-independent. Once the set is recorded, the evaluation order stops carrying meaning: a
+reader who wants one name applies the declared precedence to the set.
+
+The set is exactly what an operator has to change. Because the verdict is the maximum of the
+proposals, a refusal at v\* drops below v\* only if every control in A(d) proposes something less
+strict; the others are already below it. So A(d) answers the remediation question directly: which
+controls must change before this payment could go through? A single winner understates the answer
+whenever the set has more than one member. In the example of Section 5.2 the set is {budget,
+sanctions}, and an operator reading it knows before raising the limit that the limit alone will not
+help.
+
+The set has costs, and they are why we do not argue it should replace a single name.
+
+- **It rules out stopping early.** Computing A(d) means running every control after the outcome is
+  settled. Many policy engines stop at the first denial. For a deterministic layer deciding in
+  microseconds (Section 9) the extra work is small, but a control that calls out, such as a
+  screening provider charging per query, turns it into money and latency.
+- **It discloses more.** A set names every rule that would have refused. Section 4's card-network
+  objection, that disclosed rules can be worked around, applies with more force, and the same answer
+  holds only if the record goes to the operator who wrote the policy.
+- **It says little about approvals.** On an approval every control proposed `APPROVE`, so the set is
+  every control that ran. Naming what let a payment through needs the headroom view of Section 5.4,
+  not the set.
+- **It makes conformance stricter, which is a gain.** Scoring set equality instead of a single name
+  catches an implementation that silently skips a control which would have refused, even when
+  another control refused anyway. The delete-a-control test of Section 5.5 then detects decorative
+  controls on ties too, where a single name hides them.
+
+For a specification the consequence is concrete. It can require the set, plus a primary control
+chosen by declared precedence, and leave evaluation order as an implementation's private matter.
+AEGS 0.1 requires a single deciding control; the reference implementation records one
+(`authorization.decidingEngine`, Appendix A), and the per-reason verdicts it already writes appear
+sufficient to compute the set, which no current field exposes. Measuring how often real decisions
+have more than one member is part of the work in Section 10.
 
 ---
 
@@ -717,6 +796,9 @@ There are no benign twins, so over-refusal is not measured. An implementation th
 twenty attacks would score 20 out of 20. PayBench's matched pairs exist to prevent that, and adopting
 them would change what our score means. Until then the score is an upper bound on defence and says
 nothing about false positives, which Section 2 argues is the expensive failure on an irreversible rail.
+Adding a benign twin for every attack and reporting the false-refusal rate next to the defence count
+is the main change planned for the next version. Measuring how often a refusal has more than one
+member in its attribution set (Section 5.6) is the second.
 
 Twenty attacks is a small number, and the same author chose the five classes.
 
@@ -893,6 +975,13 @@ record, and responsibility for all of it is the author's.
 
 ## Changes
 
+**Version 0.4.** Title states the search terms (attribution, pre-execution governance, AI agent
+payments, x402); the earlier titles are kept as the subtitle. New Section 5.6 on set-valued
+attribution: order-free by construction and equal to the set of controls an operator must change, at
+the cost of evaluating every control. The Organizational Control Layer, Agent Control Protocol and an
+anchored black-box architecture placed in Section 3.1 and Table 1. Contributions restated by what
+they change for specifications and audits. The PDF is now the record's primary file.
+
 **Version 0.3.** New title, with the old one kept as the subtitle. Section numbers written as
 "Section 5" instead of with the section sign. Table 0, what is conceded and what is claimed, moved to
 the front. Links to every repository. Appendix A, with commands verified from a clean install.
@@ -1023,11 +1112,24 @@ Claude Code's environment.*
 `adk.dev/callbacks/types-of-callbacks/`. *Retrieved 2026-10-24; `before_tool_callback` runs before a
 tool executes, and a returned dictionary is used as the tool's result instead of running it.*
 
+**[26]** `[read]` T. Shi, Y. Mo, Y. Liu, Z. Hao, Y. Wang, W. Hu, N. Yu, M. Zhou, J. Yu.
+*Organizational Control Layer: Governance Infrastructure at the Execution Boundary of LLM Agent
+Systems.* arXiv:2606.04306v2 [cs.MA], August 2026. *Retrieved and read 2026-10-25 (HTML version); the
+four outcomes, the audit policy quoted in Section 3.1, the evaluation figures and the absence of a
+benign-only set verified in the text.*
+
+**[27]** `[secondary]` M. Fernandez. *Agent Control Protocol: Admission Control for Agent Actions.*
+arXiv:2603.18829, v10, April 2026. *Abstract only.*
+
+**[28]** `[secondary]` A. Brömme. *A Black Box for Agentic Processes: Blockchain-Anchored Evidence for
+AI Agent Communication, Human Oversight, and GRC Audits.* arXiv:2609.04017 [cs.CR], September 2026.
+*Abstract only.*
+
 ---
 
 ### A note on this bibliography
 
-Nineteen of twenty-five entries are marked `[read]`. The rest were consulted at one remove, and each
+Twenty of twenty-eight entries are marked `[read]`. The rest were consulted at one remove, and each
 entry says how.
 
 Entry [2] moved from `[secondary]` to `[read]` in August 2026, and the move changed Section 3.1, which is the

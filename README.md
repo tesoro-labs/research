@@ -2,8 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23610076.svg)](https://doi.org/10.5281/zenodo.23610076)
 
-**Paper:** *Same verdict, different culprit: which control decided? Attribution and enforcement points
-for AI agent payments* — Jayath de Silva, preprint draft v0.3, 2026. [`paper/paper.pdf`](paper/paper.pdf) ·
+**Paper:** *Required attribution for pre-execution governance of AI agent payments (x402): same verdict, different culprit* — Jayath de Silva, preprint draft v0.4, 2026. [`paper/paper.pdf`](paper/paper.pdf) ·
 [DOI 10.5281/zenodo.23611493](https://doi.org/10.5281/zenodo.23611493) (v0.3) ·
 [10.5281/zenodo.23610076](https://doi.org/10.5281/zenodo.23610076) (all versions). Not peer reviewed.
 
